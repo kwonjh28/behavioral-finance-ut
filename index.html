@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>세이빙 챌린지 프로토타입</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="desktop-shell">
+      <aside class="guide-panel">
+        <div class="guide-card">
+          <p class="eyebrow">UT Prototype</p>
+          <h1>세이빙 챌린지 테스트</h1>
+          <p class="guide-copy">
+            엑셀 파일을 올리면 실제 소비내역을 바탕으로 챌린지 후보와 목표값이 계산됩니다.
+          </p>
+
+          <label class="upload-box" for="excel-file">
+            <input id="excel-file" type="file" accept=".xlsx,.xls" />
+            <span class="upload-title">소비데이터 업로드</span>
+            <span class="upload-desc">
+              뱅크샐러드 엑셀의 "가계부 내역" 시트를 읽습니다.
+            </span>
+          </label>
+
+          <div class="guide-tip">
+            <strong>1차 테스트 포인트</strong>
+            <p>
+              업로드 → 추천 챌린지 생성 → 상세 계산 → 홈 반영까지의 흐름을 검증하는 버전입니다.
+            </p>
+          </div>
+
+          <div class="guide-meta">
+            <div>
+              <span class="meta-label">현재 상태</span>
+              <strong id="status-text"></strong>
+            </div>
+            <div>
+              <span class="meta-label">아이콘 규칙</span>
+              <strong>미매핑 카테고리 → 식비 아이콘 대체</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="phone-stage">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+
+          <section class="screen active" data-screen="home">
+            <div class="screen-scroll">
+              <header class="screen-header home-header">
+                <p class="section-label">월 목표 세이빙 금액</p>
+                <h2 id="home-saving-amount">44,083원</h2>
+                <p class="saving-subcopy">
+                  <strong id="home-saving-period">1년 6개월</strong>
+                  동안
+                  <strong class="accent" id="home-saving-total">955,000원</strong>
+                  아꼈어요
+                </p>
+              </header>
+
+              <section class="quick-stats">
+                <article class="stat-card">
+                  <div class="stat-card-copy">
+                    <p>이번달 지출</p>
+                    <strong id="home-month-spend">455,250원</strong>
+                  </div>
+                  <span class="stat-arrow">&#8250;</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-card-copy">
+                    <p>내 세이빙 계좌</p>
+                    <strong id="home-savings-account">37,750원</strong>
+                  </div>
+                  <span class="stat-arrow">&#8250;</span>
+                </article>
+              </section>
+
+              <section class="content-section">
+                <div class="section-head">
+                  <div class="section-head-left">
+                    <h3>나의 챌린지</h3>
+                    <span class="count-pill" id="home-challenge-count">2건</span>
+                  </div>
+                  <button class="text-button" data-action="go-my-challenges">더보기</button>
+                </div>
+                <div id="home-challenge-list" class="card-list"></div>
+              </section>
+
+
+              <section class="content-section">
+                <div class="section-head">
+                  <h3>위시리스트</h3>
+                  <button class="text-button">더보기</button>
+                </div>
+                <div class="wishlist-grid">
+                  <article class="wishlist-card">
+                    <div class="wishlist-image">
+                      <img id="wishlist-image-1" alt="" />
+                    </div>
+                    <div class="wishlist-copy">
+                      <strong>일광전구 스노우맨</strong>
+                      <p>110,000원</p>
+                    </div>
+                  </article>
+                  <article class="wishlist-card">
+                    <div class="wishlist-image">
+                      <img id="wishlist-image-2" alt="" />
+                    </div>
+                    <div class="wishlist-copy">
+                      <strong>스탠리 텀블러</strong>
+                      <p>49,000원</p>
+                    </div>
+                  </article>
+                </div>
+              </section>
+            </div>
+
+            <nav class="bottom-bar">
+              <button class="tab tab-home active"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
+              <button class="tab tab-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-challenge" data-action="go-status"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
+              <button class="tab tab-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+            </nav>
+          </section>
+
+          <section class="screen" data-screen="add">
+            <div class="screen-scroll">
+              <header class="nav-header">
+                <button class="back-button" data-action="go-home">&#8249;</button>
+                <h2>챌린지 추가</h2>
+                <span class="nav-spacer"></span>
+              </header>
+
+              <section class="content-section top-tight">
+                <div class="action-row">
+                  <button class="soft-chip">직접 추가</button>
+                  <button class="sort-button">횟수많은순</button>
+                </div>
+                <div id="candidate-list" class="candidate-list"></div>
+              </section>
+
+              <section class="add-footer-note">
+                <button class="add-footer-button">더보기</button>
+                <p class="add-footer-copy">가장 높은 값을 기준으로 불러왔어요.</p>
+              </section>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="detail">
+            <div class="screen-scroll">
+              <header class="nav-header">
+                <button class="back-button" data-action="go-add">&#8249;</button>
+                <h2>챌린지 추가</h2>
+                <span class="nav-spacer"></span>
+              </header>
+
+              <section class="detail-card-group detail-card-group--top">
+                <article class="info-card info-card--name">
+                  <p class="card-label">챌린지명</p>
+                  <strong id="detail-challenge-name">-</strong>
+                </article>
+              </section>
+
+              <section class="candidate-summary candidate-summary--detail">
+                <div class="category-icon"></div>
+                <div class="candidate-summary-text">
+                  <strong id="detail-category-title">식비</strong>
+                  <div class="summary-grid">
+                    <span id="detail-annual-amount">0원</span>
+                    <span id="detail-annual-count">0회</span>
+                  </div>
+                  <div class="summary-grid summary-grid-subtle">
+                    <span id="detail-monthly-amount">0원</span>
+                    <span id="detail-monthly-count">0회</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="content-section detail-intro">
+                <p class="hint-text">
+                  가장 많은 비중을 차지하는 TOP3 항목들이에요.
+                </p>
+                <div id="detail-subcategory-chips" class="chip-row"></div>
+              </section>
+
+              <section class="detail-card-group">
+                <article class="info-card active-card">
+                  <p class="card-label">월 목표 지출액</p>
+                  <strong id="detail-target-amount">0원</strong>
+                  <div id="detail-ratio-chips" class="chip-row"></div>
+                  <p class="success-text" id="detail-saving-text">
+                    매월 약 0원 아껴요.
+                  </p>
+                </article>
+
+                <article class="info-card">
+                  <p class="card-label">월 목표 지출 횟수</p>
+                  <strong id="detail-target-count">0회</strong>
+                </article>
+
+                <article class="info-card">
+                  <p class="card-label">매년 아낄 수 있는 금액</p>
+                  <strong id="detail-year-saving">0원</strong>
+                </article>
+              </section>
+            </div>
+
+            <div class="sticky-cta">
+              <button id="complete-button" class="primary-button">등록하기</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="challenge-detail">
+            <button class="floating-back-button" data-action="go-back-overview">&#8249;</button>
+            <div class="screen-scroll challenge-detail-scroll">
+              <section class="challenge-hero">
+                <div class="challenge-hero-main">
+                  <div>
+                    <h2 id="overview-title">습관성 카페 줄이기</h2>
+                    <div class="hero-progress-line">
+                      <strong id="overview-amount-current">22,500원</strong>
+                      <span id="overview-amount-target">/69,350원</span>
+                      <strong id="overview-count-current">4회</strong>
+                      <span id="overview-count-target">/10회</span>
+                    </div>
+                  </div>
+                  <button class="small-edit-button">편집</button>
+                </div>
+                <div class="overview-stats">
+                  <div class="overview-stat-row">
+                    <span>월 목표 세이빙</span>
+                    <strong id="overview-month-saving">6,155원 (10회)</strong>
+                  </div>
+                  <div class="overview-stat-row">
+                    <span>기존 월평균 지출</span>
+                    <strong id="overview-base-spend">73,860원 (12회)</strong>
+                  </div>
+                  <div class="overview-stat-row">
+                    <span>누적 세이빙</span>
+                    <strong id="overview-total-saving">48,650원</strong>
+                  </div>
+                  <div class="overview-stat-row">
+                    <span>시작일</span>
+                    <strong id="overview-start-date">2025.06.15</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="divider overview-divider"></div>
+
+              <section class="overview-block">
+                <div class="overview-heading">
+                  <h3>최근 3개월 평균 세이빙</h3>
+                  <div class="overview-heading-value">
+                    <strong>14,960원</strong>
+                    <span class="overview-rise">&#9650; 786원</span>
+                  </div>
+                </div>
+                <div class="overview-history">
+                  <div class="overview-history-bar"></div>
+                  <div class="overview-history-list">
+                    <div class="overview-history-row"><strong>15,780원</strong><span>5월</span></div>
+                    <div class="overview-history-row"><strong>14,900원</strong><span>4월</span></div>
+                    <div class="overview-history-row"><strong>14,200원</strong><span>3월</span></div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="divider overview-divider"></div>
+
+              <section class="overview-block">
+                <div class="overview-heading">
+                  <h3>세이빙 미리보기</h3>
+                  <div class="preview-toggle">
+                    <span>평균값 적용</span>
+                    <button class="toggle-pill" id="preview-toggle" type="button" aria-pressed="true"><span></span></button>
+                  </div>
+                </div>
+                <div class="preview-list">
+                  <div class="preview-row"><div><span class="preview-badge">2Y</span><strong>24회</strong></div><b>147,720원</b></div>
+                  <div class="preview-row"><div><span class="preview-badge">3Y</span><strong>36회</strong></div><b>221,580원</b></div>
+                  <div class="preview-row"><div><span class="preview-badge">5Y</span><strong>60회</strong></div><b>369,300원</b></div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="my-challenges">
+            <div class="screen-scroll">
+              <header class="nav-header">
+                <button class="back-button" data-action="go-home">&#8249;</button>
+                <h2>챌린지 내역</h2>
+                <span class="nav-spacer"></span>
+              </header>
+              <section class="content-section top-tight">
+                <div class="my-filter-row">
+                  <div class="my-filter-chips">
+                    <button class="subcategory-chip active" data-filter="all">전체</button>
+                    <button class="subcategory-chip" data-filter="in-progress">진행 중</button>
+                    <button class="subcategory-chip" data-filter="completed">완료</button>
+                  </div>
+                  <button class="sort-button">최신순</button>
+                </div>
+                <div id="all-challenge-list" class="card-list"></div>
+              </section>
+            </div>
+            <div class="sticky-cta">
+              <button class="my-challenge-add-button" data-action="go-add">챌린지 추가</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="status">
+            <div class="screen-scroll">
+              <section class="status-account">
+                <h3>내 세이빙 계좌</h3>
+                <div class="status-account-row">
+                  <span>한국 3510966603693</span>
+                  <button class="text-button">상세보기</button>
+                </div>
+                <strong id="home-savings-account-clone">37,750원</strong>
+              </section>
+
+              <section class="status-card-dark">
+                <div class="status-card-dark-top">
+                  <div>
+                    <p>이번 달 세이빙</p>
+                    <strong id="status-month-saving">46,850원</strong>
+                  </div>
+                </div>
+                <div class="status-goal-pill">
+                  <span>목표 금액</span>
+                  <b id="status-goal-amount">13,870원</b>
+                </div>
+              </section>
+
+              <div class="divider"></div>
+
+              <section class="content-section top-tight">
+                <div class="section-head">
+                  <div class="section-head-left">
+                    <h3>챌린지 목록</h3>
+                    <span class="count-pill" id="status-challenge-count">2건</span>
+                  </div>
+                  <button class="text-button" data-action="go-my-challenges">더보기</button>
+                </div>
+                <div id="status-challenge-list" class="card-list"></div>
+              </section>
+            </div>
+            <nav class="bottom-bar bottom-bar-inline">
+              <button class="tab tab-home" data-action="go-home"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
+              <button class="tab tab-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-challenge active"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
+              <button class="tab tab-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+            </nav>
+          </section>
+
+          <div id="modal-backdrop" class="modal-backdrop hidden">
+            <div class="modal-card">
+              <h3>챌린지 추가가 완료되었습니다!</h3>
+              <p id="modal-message">챌린지 내역을 확인하러 가시겠어요?</p>
+              <div class="modal-actions">
+                <button class="ghost-button" data-action="go-home-modal">홈으로 이동</button>
+                <button class="primary-button modal-confirm-button" data-action="confirm-modal">네</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
