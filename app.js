@@ -46,7 +46,7 @@ const TEXT = {
   summaryUpdated: "\uAE30\uC900\uC73C\uB85C \uCD5C\uADFC \uCC4C\uB9B0\uC9C0 \uD604\uD669\uC744 \uACC4\uC0B0\uD588\uC5B4\uC694.",
   modalAdded: "\uCC4C\uB9B0\uC9C0 \uB0B4\uC5ED\uC744 \uD655\uC778\uD558\uB7EC \uAC00\uC2DC\uACA0\uC5B4\uC694?",
   hintSaving: "\uB9E4\uC6D4 \uC57D",
-  hintSaved: "\uC544\uAED4\uC694.",
+  hintSaved: "\uC544\uAEF4\uC694.",
 };
 
 const appState = {
@@ -257,6 +257,10 @@ function formatCountMetric(value) {
   return `${num.toFixed(1)}\uD68C`;
 }
 
+function formatMonthlySavingText(value) {
+  return `${TEXT.hintSaving} ${formatWon(value)} ${TEXT.hintSaved}`;
+}
+
 function setRollingText(element, nextText, options = {}) {
   if (!element) return;
 
@@ -335,9 +339,11 @@ function isSampleSource(sourceName = appState.sourceName) {
 
 function refreshScreenScrollState() {
   document.querySelectorAll(".screen-scroll").forEach((container) => {
+    const screen = container.closest(".screen")?.dataset.screen;
+    const shouldAlwaysScroll = screen === "detail" || screen === "challenge-detail" || screen === "add";
     const fitsViewport = container.scrollHeight <= container.clientHeight + 12;
-    container.classList.toggle("is-scroll-locked", fitsViewport);
-    if (fitsViewport) {
+    container.classList.toggle("is-scroll-locked", fitsViewport && !shouldAlwaysScroll);
+    if (fitsViewport && !shouldAlwaysScroll) {
       container.scrollTop = 0;
     }
   });
@@ -362,9 +368,11 @@ function queueScrollStateRefresh() {
 function refreshActiveScreenScrollState() {
   const activeScroll = document.querySelector(".screen.active .screen-scroll");
   if (!activeScroll) return;
+  const screen = activeScroll.closest(".screen")?.dataset.screen;
+  const shouldAlwaysScroll = screen === "detail" || screen === "challenge-detail" || screen === "add";
   const fitsViewport = activeScroll.scrollHeight <= activeScroll.clientHeight + 12;
-  activeScroll.classList.toggle("is-scroll-locked", fitsViewport);
-  if (fitsViewport) {
+  activeScroll.classList.toggle("is-scroll-locked", fitsViewport && !shouldAlwaysScroll);
+  if (fitsViewport && !shouldAlwaysScroll) {
     activeScroll.scrollTop = 0;
   }
 }
@@ -880,11 +888,9 @@ function renderDetail() {
     formatCount(selection.targetCount),
     { animate: shouldAnimateNumbers, duration: 480, stagger: 20 },
   );
-  setRollingText(
-    document.getElementById("detail-saving-text"),
-    `${TEXT.hintSaving} ${formatWon(selection.savingMonthly)} ${TEXT.hintSaved}`,
-    { animate: shouldAnimateNumbers, duration: 560, stagger: 18 },
-  );
+  const detailSavingTextEl = document.getElementById("detail-saving-text");
+  detailSavingTextEl.textContent = formatMonthlySavingText(selection.savingMonthly);
+  detailSavingTextEl.setAttribute("aria-label", detailSavingTextEl.textContent);
   setRollingText(
     document.getElementById("detail-year-saving"),
     formatWon(selection.yearlySaving),
@@ -1147,10 +1153,29 @@ function bindStaticAssets() {
   if (wishTwo) wishTwo.src = ASSETS.wishTwo;
 }
 
+function updateStatusTime() {
+  const timeEl = document.getElementById("status-time");
+  if (!timeEl) return;
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+  const minute = parts.find((part) => part.type === "minute")?.value || "00";
+  const displayHour = hour % 12 || 12;
+
+  timeEl.textContent = `${displayHour}:${minute}`;
+}
+
 bindActions();
 bindScrollGuards();
 bindScrollStateObservers();
 bindStaticAssets();
+updateStatusTime();
+setInterval(updateStatusTime, 60000);
 statusText.textContent = TEXT.statusReady;
 applyTransactions(sampleTransactions, TEXT.sample);
 renderAll();
