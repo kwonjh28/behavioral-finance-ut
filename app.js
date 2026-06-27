@@ -2,6 +2,7 @@ const currency = new Intl.NumberFormat("ko-KR");
 
 const screenEls = [...document.querySelectorAll(".screen")];
 const modalBackdrop = document.getElementById("modal-backdrop");
+const categorySheetBackdrop = document.getElementById("category-sheet-backdrop");
 const uploadInput = document.getElementById("excel-file");
 const statusText = document.getElementById("status-text");
 let scrollStateRefreshQueued = false;
@@ -13,6 +14,9 @@ const ASSETS = {
   iconFashion: "https://www.figma.com/api/mcp/asset/2a7d0101-902e-49d9-a968-7642b7e20862",
   wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
   wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
+  wishSnowman: "https://www.figma.com/api/mcp/asset/c0481063-63ed-430c-aabd-e2fde156b1f2",
+  wishTumbler: "https://www.figma.com/api/mcp/asset/54088dc8-da79-4783-8601-23fd89b385f5",
+  wishAesop: "https://www.figma.com/api/mcp/asset/c3f23808-7e11-4133-9449-0a01e263df0e",
 };
 
 const TEXT = {
@@ -49,15 +53,53 @@ const TEXT = {
   hintSaved: "\uC544\uAEF4\uC694.",
 };
 
-const appState = {
-  currentScreen: "home",
-  lastScreen: "home",
-  monthlySavingGoal: 44083,
+const INITIAL_SUMMARY = {
+  monthlySavingGoal: 13870,
   currentMonthSaving: 46850,
   savingsAccount: 37750,
   currentMonthSpend: 455250,
   totalSaved: 955000,
   savingPeriodLabel: "1\uB144 6\uAC1C\uC6D4",
+};
+
+function getInitialWishlistItems() {
+  return [
+    {
+      id: "snowman",
+      title: "일광전구 스노우맨",
+      price: 110000,
+      category: "생활",
+      progress: 34,
+      savedAmount: 37750,
+      image: ASSETS.wishSnowman,
+      status: "in-progress",
+      registeredAt: "2026년 6월 3일",
+      expectedAt: "2027년 6월",
+    },
+    {
+      id: "stanley",
+      title: "스탠리 텀블러",
+      price: 49000,
+      category: "생활",
+      progress: 77,
+      savedAmount: 37750,
+      image: ASSETS.wishTumbler,
+      status: "in-progress",
+      registeredAt: "2026년 6월 3일",
+      expectedAt: "2026년 9월",
+    },
+  ];
+}
+
+const appState = {
+  currentScreen: "home",
+  lastScreen: "home",
+  monthlySavingGoal: INITIAL_SUMMARY.monthlySavingGoal,
+  currentMonthSaving: INITIAL_SUMMARY.currentMonthSaving,
+  savingsAccount: INITIAL_SUMMARY.savingsAccount,
+  currentMonthSpend: INITIAL_SUMMARY.currentMonthSpend,
+  totalSaved: INITIAL_SUMMARY.totalSaved,
+  savingPeriodLabel: INITIAL_SUMMARY.savingPeriodLabel,
   sourceName: TEXT.sample,
   transactions: [],
   candidateCategories: [],
@@ -67,6 +109,12 @@ const appState = {
   selectedSubcategory: TEXT.all,
   selectedRatio: 0.9,
   previewUsesAverage: true,
+  selectedSpendCategory: "all",
+  selectedWishlistId: "snowman",
+  selectedWishlistPreset: null,
+  wishlistJustRegistered: false,
+  modalMode: "challenge",
+  wishlistItems: getInitialWishlistItems(),
   challenges: [
     {
       id: "habit-cafe",
@@ -119,6 +167,89 @@ const appState = {
       insight: "8\uAC1C\uC6D4 \uB3D9\uC548 564,270\uC6D0 \uC544\uAF08\uC5B4\uC694.",
     },
   ],
+};
+
+const wishlistPresets = {
+  living: {
+    id: "aesop",
+    title: "이솝 핸드워시",
+    price: 56000,
+    category: "리빙/인테리어",
+    progress: 58,
+    savedAmount: 32500,
+    image: ASSETS.wishAesop,
+    status: "in-progress",
+    registeredAt: "2026년 6월 27일",
+    expectedAt: "2026년 11월",
+  },
+};
+
+const wishlistCategoryPresets = {
+  fashion: { title: "아크테릭스 맨티스", price: 89000, category: "패션/잡화", image: ASSETS.wishTumbler },
+  food: { title: "오마카세 식사권", price: 120000, category: "미식/푸드", image: ASSETS.wishSnowman },
+  tech: { title: "무선 키보드", price: 139000, category: "테크/가전", image: ASSETS.wishTumbler },
+  living: wishlistPresets.living,
+  culture: { title: "전시 패키지", price: 65000, category: "여가/문화", image: ASSETS.wishSnowman },
+  beauty: { title: "이솝 핸드워시", price: 56000, category: "뷰티/웰니스", image: ASSETS.wishAesop },
+  sports: { title: "러닝화", price: 129000, category: "스포츠", image: ASSETS.wishTumbler },
+  travel: { title: "제주 항공권", price: 180000, category: "여행", image: ASSETS.wishSnowman },
+  career: { title: "온라인 클래스", price: 99000, category: "배움/커리어", image: ASSETS.wishTumbler },
+  etc: { title: "이솝 핸드워시", price: 56000, category: "기타", image: ASSETS.wishAesop },
+};
+
+const spendData = {
+  all: {
+    total: 455250,
+    shareLabel: "전체 중",
+    share: 100,
+    groups: [
+      {
+        date: "22일 (월)",
+        rows: [
+          { merchant: "컬리", time: "22:30", amount: 41200 },
+          { merchant: "이디야", time: "16:11", amount: 6200 },
+          { merchant: "서브웨이", time: "12:32", amount: 9200 },
+        ],
+      },
+      {
+        date: "21일 (일)",
+        rows: [
+          { merchant: "GS25 상수점", time: "22:06", amount: 6900 },
+          { merchant: "배달의민족", time: "20:32", amount: 23400 },
+          { merchant: "메가커피", time: "15:28", amount: 3500 },
+        ],
+      },
+      {
+        date: "20일 (토)",
+        rows: [
+          { merchant: "쿠팡", time: "19:43", amount: 32900 },
+          { merchant: "올리브영", time: "14:12", amount: 18500 },
+          { merchant: "네이버쇼핑", time: "14:08", amount: 49000 },
+        ],
+      },
+    ],
+  },
+  online: {
+    total: 138500,
+    shareLabel: "전체 중",
+    share: 30,
+    groups: [
+      {
+        date: "22일 (월)",
+        rows: [
+          { merchant: "컬리", time: "22:30", amount: 41200 },
+        ],
+      },
+      {
+        date: "20일 (토)",
+        rows: [
+          { merchant: "쿠팡", time: "19:43", amount: 32900 },
+          { merchant: "올리브영", time: "14:12", amount: 18500 },
+          { merchant: "네이버쇼핑", time: "14:08", amount: 45900 },
+        ],
+      },
+    ],
+  },
 };
 
 const categoryLabelMap = {
@@ -340,7 +471,7 @@ function isSampleSource(sourceName = appState.sourceName) {
 function refreshScreenScrollState() {
   document.querySelectorAll(".screen-scroll").forEach((container) => {
     const screen = container.closest(".screen")?.dataset.screen;
-    const shouldAlwaysScroll = screen === "detail" || screen === "challenge-detail" || screen === "add";
+    const shouldAlwaysScroll = ["detail", "challenge-detail", "add", "wishlist", "wishlist-detail", "wishlist-add", "spend"].includes(screen);
     const fitsViewport = container.scrollHeight <= container.clientHeight + 12;
     container.classList.toggle("is-scroll-locked", fitsViewport && !shouldAlwaysScroll);
     if (fitsViewport && !shouldAlwaysScroll) {
@@ -369,7 +500,7 @@ function refreshActiveScreenScrollState() {
   const activeScroll = document.querySelector(".screen.active .screen-scroll");
   if (!activeScroll) return;
   const screen = activeScroll.closest(".screen")?.dataset.screen;
-  const shouldAlwaysScroll = screen === "detail" || screen === "challenge-detail" || screen === "add";
+  const shouldAlwaysScroll = ["detail", "challenge-detail", "add", "wishlist", "wishlist-detail", "wishlist-add", "spend"].includes(screen);
   const fitsViewport = activeScroll.scrollHeight <= activeScroll.clientHeight + 12;
   activeScroll.classList.toggle("is-scroll-locked", fitsViewport && !shouldAlwaysScroll);
   if (fitsViewport && !shouldAlwaysScroll) {
@@ -465,7 +596,7 @@ function bindScrollStateObservers() {
 }
 
 function setScreen(screenName) {
-  if (screenName === "home" || screenName === "status" || screenName === "my-challenges" || screenName === "add" || screenName === "detail") {
+  if (["home", "status", "my-challenges", "wishlist", "spend", "add", "detail"].includes(screenName)) {
     appState.lastScreen = screenName;
   }
   appState.currentScreen = screenName;
@@ -497,13 +628,30 @@ function renderCategoryIcon(category, alt = "", size = "default") {
   return `<img class="category-icon-image category-icon-image--${size}" src="${asset}" alt="${alt}" loading="lazy" />`;
 }
 
-function showModal(message) {
+function showModal(message, title = "챌린지 추가가 완료되었습니다!", mode = "challenge") {
+  appState.modalMode = mode;
+  document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-message").textContent = message;
   modalBackdrop.classList.remove("hidden");
 }
 
+function getCurrentWishlistItem() {
+  return (
+    appState.wishlistItems.find((item) => item.id === appState.selectedWishlistId) ||
+    appState.wishlistItems[0]
+  );
+}
+
 function hideModal() {
   modalBackdrop.classList.add("hidden");
+}
+
+function showCategorySheet() {
+  categorySheetBackdrop?.classList.remove("hidden");
+}
+
+function hideCategorySheet() {
+  categorySheetBackdrop?.classList.add("hidden");
 }
 
 function getCurrentCandidate() {
@@ -668,7 +816,21 @@ function buildChallengeFromCandidate(candidate) {
   };
 }
 
+function recalculateSavingsSummary() {
+  const monthlyGoals = appState.challenges.reduce(
+    (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
+    0,
+  );
+  const extraMonthlySaving = Math.max(monthlyGoals - INITIAL_SUMMARY.monthlySavingGoal, 0);
+
+  appState.monthlySavingGoal = monthlyGoals;
+  appState.currentMonthSaving = INITIAL_SUMMARY.currentMonthSaving + extraMonthlySaving;
+  appState.savingsAccount = INITIAL_SUMMARY.savingsAccount + Math.round(extraMonthlySaving * 0.72);
+  appState.totalSaved = INITIAL_SUMMARY.totalSaved + extraMonthlySaving * 12;
+}
+
 function updateHomeSummary() {
+  recalculateSavingsSummary();
   const monthlyGoals = appState.challenges.reduce(
     (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
     0,
@@ -799,6 +961,151 @@ function renderChallengeCards(containerId, challenges, options = {}) {
     }
     container.appendChild(card);
   });
+}
+
+function renderWishlistCard(item, options = {}) {
+  const card = document.createElement("article");
+  card.className = "wishlist-card wishlist-card--with-progress";
+  card.innerHTML = `
+    <div class="wishlist-image">
+      <img src="${item.image}" alt="" loading="lazy" />
+    </div>
+    <div class="wishlist-copy">
+      <strong>${item.title}</strong>
+      <p>${formatWon(item.price)}</p>
+      <div class="wishlist-progress">
+        <span>${item.progress}%</span>
+        <div><i style="width:${item.progress}%"></i></div>
+      </div>
+    </div>
+  `;
+  card.addEventListener("click", () => {
+    appState.selectedWishlistId = item.id;
+    renderWishlistDetail();
+    setScreen("wishlist-detail");
+  });
+  if (options.compact) {
+    card.classList.add("wishlist-card--compact");
+  }
+  return card;
+}
+
+function renderWishlist() {
+  const container = document.getElementById("wishlist-page-grid");
+  if (!container) return;
+  container.innerHTML = "";
+  appState.wishlistItems.forEach((item) => {
+    container.appendChild(renderWishlistCard(item));
+  });
+}
+
+function renderWishlistDetail() {
+  const item = getCurrentWishlistItem();
+  if (!item) return;
+  const percent = Math.max(0, Math.min(item.progress, 100));
+
+  document.getElementById("wishlist-detail-image").src = item.image;
+  document.getElementById("wishlist-detail-category").textContent = item.category;
+  document.getElementById("wishlist-detail-title").textContent = item.title;
+  document.getElementById("wishlist-detail-price").textContent = formatWon(item.price);
+  document.getElementById("wish-progress-fill").style.width = `${percent}%`;
+  document.getElementById("wish-progress-bubble").style.left = `${percent}%`;
+  document.getElementById("wish-progress-bubble").textContent = formatWon(item.savedAmount);
+  document.getElementById("wish-achievement").textContent = `달성률 ${percent}%`;
+
+  const metaRows = document.querySelectorAll(".wish-meta div");
+  if (metaRows[0]) metaRows[0].querySelector("strong").textContent = item.registeredAt;
+  if (metaRows[1]) metaRows[1].querySelector("strong").textContent = item.expectedAt;
+}
+
+function renderWishlistAddForm() {
+  const preset = appState.selectedWishlistPreset ? wishlistCategoryPresets[appState.selectedWishlistPreset] : null;
+  const imagePicker = document.getElementById("wishlist-image-picker");
+  const nameInput = document.getElementById("wishlist-name-input");
+  const categorySelect = document.getElementById("wishlist-category-select");
+  const priceInput = document.getElementById("wishlist-price-input");
+  const registerButton = document.getElementById("wishlist-register-button");
+
+  if (!imagePicker || !nameInput || !categorySelect || !priceInput || !registerButton) return;
+
+  imagePicker.innerHTML = preset
+    ? `<img src="${preset.image}" alt="" />`
+    : "이미지 추가";
+  imagePicker.classList.toggle("has-image", Boolean(preset));
+  nameInput.value = preset?.title || "";
+  categorySelect.textContent = preset?.category || "카테고리를 선택해주세요.";
+  priceInput.value = preset ? formatWon(preset.price) : "";
+  registerButton.textContent = appState.wishlistJustRegistered ? "등록 완료" : "등록하기";
+  registerButton.classList.toggle("disabled-button", !preset || appState.wishlistJustRegistered);
+}
+
+function getSpendCategories() {
+  return [
+    { key: "all", label: "전체", count: 25, icon: "grid" },
+    { key: TEXT.categoryCafe, label: "카페/간식", count: 8, icon: TEXT.categoryCafe },
+    { key: TEXT.categoryFood, label: "외식", count: 7, icon: TEXT.categoryFood },
+    { key: "패션/쇼핑", label: "패션/쇼핑", count: 5, icon: "패션/쇼핑" },
+    { key: "online", label: "온라인 쇼핑", count: 4, icon: "온라인쇼핑" },
+    { key: TEXT.categoryTraffic, label: "교통", count: 2, icon: TEXT.categoryTraffic },
+    { key: "술/유흥", label: "술/유흥", count: 2, icon: TEXT.categoryCafe },
+    { key: "기타", label: "기타", count: 2, icon: "grid" },
+  ];
+}
+
+function renderSpendCategoryIcon(category) {
+  if (category.icon === "grid") {
+    return `<span class="spend-grid-icon"><i></i><i></i><i></i><i></i></span>`;
+  }
+  return renderCategoryIcon(category.icon, category.label, "small");
+}
+
+function renderSpend() {
+  const categoryContainer = document.getElementById("spend-category-row");
+  const list = document.getElementById("spend-transaction-list");
+  if (!categoryContainer || !list) return;
+
+  const selectedSpend = spendData[appState.selectedSpendCategory] || spendData.all;
+  document.getElementById("spend-total").textContent = formatWon(selectedSpend.total);
+  document.getElementById("spend-share-label").innerHTML = `${selectedSpend.shareLabel} <b>${selectedSpend.share}%</b>`;
+  document.getElementById("spend-saving-amount").textContent = formatWon(appState.savingsAccount);
+  categoryContainer.innerHTML = "";
+  getSpendCategories().forEach((category) => {
+    const item = document.createElement("button");
+    item.className = `spend-category${appState.selectedSpendCategory === category.key ? " active" : ""}`;
+    item.dataset.spendCategory = category.key;
+    item.innerHTML = `
+      <span class="spend-category-icon">${renderSpendCategoryIcon(category)}<b>${category.count}</b></span>
+      <span>${category.label}</span>
+    `;
+    item.addEventListener("click", () => {
+      appState.selectedSpendCategory = category.key;
+      renderSpend();
+    });
+    categoryContainer.appendChild(item);
+  });
+  requestAnimationFrame(() => {
+    categoryContainer.querySelector(".spend-category.active")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  });
+
+  list.innerHTML = selectedSpend.groups.map((group) => `
+    <div class="transaction-day">
+      <p>${group.date}</p>
+      <div class="transaction-divider"></div>
+      ${group.rows.map((row) => `
+        <article class="transaction-row">
+          <div>
+            <strong>${row.merchant}</strong>
+            <span>${row.time}</span>
+          </div>
+          <b>-${formatWon(row.amount)}</b>
+        </article>
+      `).join("")}
+    </div>
+  `).join("");
 }
 
 function renderCandidateList() {
@@ -941,6 +1248,10 @@ function renderAll() {
   renderCandidateList();
   renderDetail();
   renderChallengeOverview();
+  renderWishlist();
+  renderWishlistDetail();
+  renderWishlistAddForm();
+  renderSpend();
   document.querySelectorAll("[data-filter]").forEach((button) => {
     button.classList.toggle("active", button.dataset.filter === appState.challengeFilter);
   });
@@ -1073,29 +1384,126 @@ function formatExcelDate(value) {
 function completeChallenge() {
   const challenge = buildChallengeFromCandidate(getCurrentCandidate());
   if (!challenge) return;
-  const exists = appState.challenges.some((item) => item.id === challenge.id);
+  const existingIndex = appState.challenges.findIndex((item) => item.id === challenge.id);
 
-  if (!exists) {
+  if (existingIndex >= 0) {
+    const previous = appState.challenges[existingIndex];
+    appState.challenges[existingIndex] = {
+      ...previous,
+      ...challenge,
+      currentAmount: previous.currentAmount || challenge.currentAmount,
+      currentCount: previous.currentCount || challenge.currentCount,
+      startDate: previous.startDate || challenge.startDate,
+    };
+  } else {
     appState.challenges.push(challenge);
   }
 
-  appState.monthlySavingGoal = appState.challenges.reduce(
-    (sum, item) => sum + (item.monthlySavingTarget || 0),
-    0,
-  );
+  const displayCount = Math.max(appState.challenges.length, 2);
+  appState.homeChallengeCountDisplay = displayCount;
+  appState.statusChallengeCountDisplay = displayCount;
   appState.selectedChallengeId = challenge.id;
   renderAll();
   showModal(TEXT.modalAdded);
+}
+
+function resetPrototype() {
+  hideModal();
+  hideCategorySheet();
+  if (uploadInput) uploadInput.value = "";
+
+  appState.lastScreen = "home";
+  appState.challengeFilter = "all";
+  appState.selectedSubcategory = TEXT.all;
+  appState.selectedRatio = 0.9;
+  appState.previewUsesAverage = true;
+  appState.selectedSpendCategory = "all";
+  appState.selectedWishlistId = "snowman";
+  appState.selectedWishlistPreset = null;
+  appState.wishlistJustRegistered = false;
+  appState.modalMode = "challenge";
+  appState.wishlistItems = getInitialWishlistItems();
+  appState.currentMonthSaving = INITIAL_SUMMARY.currentMonthSaving;
+  appState.savingsAccount = INITIAL_SUMMARY.savingsAccount;
+  appState.currentMonthSpend = INITIAL_SUMMARY.currentMonthSpend;
+  appState.totalSaved = INITIAL_SUMMARY.totalSaved;
+  appState.savingPeriodLabel = INITIAL_SUMMARY.savingPeriodLabel;
+
+  applyTransactions(cloneData(sampleTransactions), TEXT.sample);
+  statusText.textContent = "\uCCAB \uD654\uBA74\uC73C\uB85C \uCD08\uAE30\uD654\uB428";
+  setScreen("home");
 }
 
 function bindActions() {
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.action;
+      if (action === "reset-prototype") resetPrototype();
       if (action === "go-home") setScreen("home");
       if (action === "go-add") setScreen("add");
       if (action === "go-status") setScreen("status");
       if (action === "go-my-challenges") setScreen("my-challenges");
+      if (action === "go-wishlist") setScreen("wishlist");
+      if (action === "go-wishlist-add") {
+        appState.selectedWishlistPreset = null;
+        appState.wishlistJustRegistered = false;
+        renderWishlistAddForm();
+        setScreen("wishlist-add");
+      }
+      if (action === "go-spend") setScreen("spend");
+      if (action === "open-wishlist-primary") {
+        appState.selectedWishlistId = "snowman";
+        renderWishlistDetail();
+        setScreen("wishlist-detail");
+      }
+      if (action === "open-wishlist-secondary") {
+        appState.selectedWishlistId = "stanley";
+        renderWishlistDetail();
+        setScreen("wishlist-detail");
+      }
+      if (action === "go-detail-from-wishlist") {
+        appState.selectedChallengeId = "habit-cafe";
+        appState.lastScreen = "wishlist-detail";
+        renderChallengeOverview();
+        setScreen("challenge-detail");
+      }
+      if (action === "open-category-sheet") {
+        showCategorySheet();
+      }
+      if (action === "close-category-sheet") {
+        hideCategorySheet();
+      }
+      if (action === "register-wishlist") {
+        if (appState.wishlistJustRegistered) return;
+        const preset = appState.selectedWishlistPreset ? wishlistCategoryPresets[appState.selectedWishlistPreset] : null;
+        if (!preset) {
+          showCategorySheet();
+          return;
+        }
+        const normalizedPreset = {
+          ...preset,
+          id: preset.id || slugify(preset.title),
+          progress: preset.progress ?? 58,
+          savedAmount: preset.savedAmount ?? 32500,
+          status: "in-progress",
+          registeredAt: preset.registeredAt || "2026년 6월 27일",
+          expectedAt: preset.expectedAt || "2026년 11월",
+        };
+        const existingIndex = appState.wishlistItems.findIndex((item) => item.id === normalizedPreset.id);
+        if (existingIndex >= 0) {
+          appState.wishlistItems[existingIndex] = normalizedPreset;
+        } else {
+          appState.wishlistItems.unshift(normalizedPreset);
+        }
+        appState.selectedWishlistId = normalizedPreset.id;
+        appState.wishlistJustRegistered = true;
+        renderAll();
+        showModal(
+          "위시리스트 내역을 확인하러 가시겠어요?",
+          "위시리스트 등록이 완료되었습니다!",
+          "wishlist",
+        );
+      }
       if (action === "go-back-overview") setScreen(appState.lastScreen || "home");
       if (action === "close-modal") hideModal();
       if (action === "go-home-modal") {
@@ -1104,7 +1512,7 @@ function bindActions() {
       }
       if (action === "confirm-modal") {
         hideModal();
-        setScreen("my-challenges");
+        setScreen(appState.modalMode === "wishlist" ? "wishlist" : "my-challenges");
       }
     });
   });
@@ -1137,6 +1545,18 @@ function bindActions() {
 
   document.getElementById("complete-button").addEventListener("click", completeChallenge);
 
+  categorySheetBackdrop?.addEventListener("click", (event) => {
+    if (event.target === categorySheetBackdrop) hideCategorySheet();
+  });
+
+  document.querySelectorAll("[data-wishlist-preset]").forEach((button) => {
+    button.addEventListener("click", () => {
+      appState.selectedWishlistPreset = button.dataset.wishlistPreset;
+      renderWishlistAddForm();
+      hideCategorySheet();
+    });
+  });
+
   uploadInput.addEventListener("change", (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1149,8 +1569,8 @@ function bindStaticAssets() {
   const wishOne = document.getElementById("wishlist-image-1");
   const wishTwo = document.getElementById("wishlist-image-2");
 
-  if (wishOne) wishOne.src = ASSETS.wishOne;
-  if (wishTwo) wishTwo.src = ASSETS.wishTwo;
+  if (wishOne) wishOne.src = ASSETS.wishSnowman;
+  if (wishTwo) wishTwo.src = ASSETS.wishTumbler;
 }
 
 function updateStatusTime() {

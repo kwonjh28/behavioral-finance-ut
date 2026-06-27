@@ -26,10 +26,14 @@
             </span>
           </label>
 
+          <button class="reset-prototype-button" data-action="reset-prototype" type="button">
+            첫 화면으로 초기화
+          </button>
+
           <div class="guide-tip">
             <strong>1차 테스트 포인트</strong>
             <p>
-              업로드 → 추천 챌린지 생성 → 상세 계산 → 홈 반영까지의 흐름을 검증하는 버전입니다.
+              업로드 → 추천 챌린지 생성 → 상세 계산 → 홈 반영 → 초기화까지의 흐름을 검증하는 버전입니다.
             </p>
           </div>
 
@@ -115,10 +119,10 @@
               <section class="content-section">
                 <div class="section-head">
                   <h3>위시리스트</h3>
-                  <button class="text-button">더보기</button>
+                  <button class="text-button" data-action="go-wishlist">더보기</button>
                 </div>
                 <div class="wishlist-grid">
-                  <article class="wishlist-card">
+                  <article class="wishlist-card" data-action="open-wishlist-primary">
                     <div class="wishlist-image">
                       <img id="wishlist-image-1" alt="" />
                     </div>
@@ -127,7 +131,7 @@
                       <p>110,000원</p>
                     </div>
                   </article>
-                  <article class="wishlist-card">
+                  <article class="wishlist-card" data-action="open-wishlist-secondary">
                     <div class="wishlist-image">
                       <img id="wishlist-image-2" alt="" />
                     </div>
@@ -142,9 +146,9 @@
 
             <nav class="bottom-bar">
               <button class="tab tab-home active"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
-              <button class="tab tab-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-wishlist" data-action="go-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
               <button class="tab tab-challenge" data-action="go-status"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
-              <button class="tab tab-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+              <button class="tab tab-spend" data-action="go-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
             </nav>
           </section>
 
@@ -375,19 +379,191 @@
             </div>
             <nav class="bottom-bar bottom-bar-inline">
               <button class="tab tab-home" data-action="go-home"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
-              <button class="tab tab-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-wishlist" data-action="go-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
               <button class="tab tab-challenge active"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
-              <button class="tab tab-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+              <button class="tab tab-spend" data-action="go-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+            </nav>
+          </section>
+
+          <section class="screen" data-screen="wishlist">
+            <div class="screen-scroll">
+              <section class="content-section wishlist-page">
+                <div class="section-head">
+                  <h3>위시리스트</h3>
+                </div>
+                <div class="wishlist-toolbar">
+                  <div class="my-filter-chips">
+                    <button class="subcategory-chip active">전체</button>
+                    <button class="subcategory-chip">진행 중</button>
+                    <button class="subcategory-chip">완료</button>
+                  </div>
+                  <button class="sort-button">최신순</button>
+                </div>
+                <div id="wishlist-page-grid" class="wishlist-grid wishlist-grid--page"></div>
+              </section>
+            </div>
+            <div class="floating-bottom-cta">
+              <button class="my-challenge-add-button" data-action="go-wishlist-add">위시리스트 추가</button>
+            </div>
+            <nav class="bottom-bar bottom-bar-inline">
+              <button class="tab tab-home" data-action="go-home"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
+              <button class="tab tab-wishlist active" data-action="go-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-challenge" data-action="go-status"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
+              <button class="tab tab-spend" data-action="go-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
+            </nav>
+          </section>
+
+          <section class="screen" data-screen="wishlist-add">
+            <div class="screen-scroll">
+              <header class="nav-header">
+                <button class="back-button" data-action="go-wishlist">&#8249;</button>
+                <h2>위시리스트 추가</h2>
+                <span class="nav-spacer"></span>
+              </header>
+              <section class="wishlist-form">
+                <button id="wishlist-image-picker" class="wishlist-image-picker" type="button" data-action="open-category-sheet">이미지 추가</button>
+                <label class="form-field">
+                  <span>위시리스트명</span>
+                  <input id="wishlist-name-input" value="" placeholder="내용을 입력해주세요." readonly />
+                </label>
+                <label class="form-field">
+                  <span>카테고리 선택</span>
+                  <button id="wishlist-category-select" type="button" class="form-select" data-action="open-category-sheet">카테고리를 선택해주세요.</button>
+                </label>
+                <label class="form-field">
+                  <span>금액</span>
+                  <input id="wishlist-price-input" value="" placeholder="금액을 입력해주세요." readonly />
+                </label>
+              </section>
+            </div>
+            <div class="sticky-cta">
+              <button id="wishlist-register-button" class="primary-button disabled-button" data-action="register-wishlist">등록하기</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="wishlist-detail">
+            <button class="floating-back-button" data-action="go-wishlist">&#8249;</button>
+            <div class="screen-scroll wishlist-detail-scroll">
+              <section class="wishlist-detail-hero">
+                <img id="wishlist-detail-image" alt="" />
+                <span id="wishlist-detail-category">생활</span>
+                <h2 id="wishlist-detail-title">일광전구 스노우맨</h2>
+                <strong id="wishlist-detail-price">110,000원</strong>
+              </section>
+
+              <section class="wish-progress">
+                <div class="wish-progress-track">
+                  <div id="wish-progress-fill" class="wish-progress-fill"></div>
+                  <span class="wish-progress-dot wish-progress-dot--0"></span>
+                  <span class="wish-progress-dot wish-progress-dot--25"></span>
+                  <span class="wish-progress-dot wish-progress-dot--50"></span>
+                  <span class="wish-progress-dot wish-progress-dot--75"></span>
+                  <span class="wish-progress-dot wish-progress-dot--100"></span>
+                  <span id="wish-progress-bubble" class="wish-progress-bubble">37,750원</span>
+                </div>
+                <div class="wish-progress-labels">
+                  <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                </div>
+                <p id="wish-achievement">달성률 34%</p>
+              </section>
+
+              <div class="divider wishlist-divider"></div>
+
+              <section class="wish-meta">
+                <div><span>등록일</span><strong>2026년 6월 3일</strong></div>
+                <div><span>예상 달성 연월</span><strong>2027년 6월</strong></div>
+              </section>
+
+              <section class="wish-recommendations">
+                <article class="wish-tip-card" data-action="go-detail-from-wishlist">
+                  <span class="sparkle">✦</span>
+                  <p>‘습관성 카페 줄이기’ 챌린지를 월 1회 더 실천하면 기간을 2개월 단축시킬 수 있어요!</p>
+                  <button type="button">바로 챌린지 수정하기</button>
+                </article>
+                <article class="wish-tip-card" data-action="go-detail-from-wishlist">
+                  <span class="sparkle">✦</span>
+                  <p>‘배달비 아껴 주식 모으기’ 챌린지를 월 1회 더 실천하면 기간을 4개월 단축시킬 수 있어요!</p>
+                  <button type="button">바로 챌린지 수정하기</button>
+                </article>
+              </section>
+            </div>
+            <div class="sticky-cta">
+              <button class="primary-button neutral-button" data-action="go-wishlist-add">편집</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="spend">
+            <div class="screen-scroll spend-scroll">
+              <section class="spend-account">
+                <h3>내 계좌</h3>
+                <div class="spend-account-row">
+                  <span>신한 3510966603693</span>
+                  <button class="text-button">상세보기</button>
+                </div>
+                <strong>2,296,192원</strong>
+                <div class="spend-saving-card">
+                  <b id="spend-saving-amount">37,750원</b>
+                  <span>세이빙 계좌</span>
+                </div>
+                <p><b>1년 6개월</b> 동안 아꼈어요</p>
+              </section>
+
+              <div class="divider spend-divider"></div>
+
+              <section class="spend-overview">
+                <div class="section-head">
+                  <h3>내 소비</h3>
+                </div>
+                <div class="month-row">
+                  <button class="month-arrow" aria-label="이전 달"></button>
+                  <strong>6월</strong>
+                  <button class="month-arrow month-arrow--next" aria-label="다음 달"></button>
+                  <button class="text-button">달력</button>
+                </div>
+                <div class="spend-total-row">
+                  <strong id="spend-total">455,250원</strong>
+                  <span id="spend-share-label">전체 중 <b>100%</b></span>
+                </div>
+                <div id="spend-category-row" class="spend-category-row"></div>
+              </section>
+
+              <section id="spend-transaction-list" class="transaction-list"></section>
+            </div>
+            <nav class="bottom-bar bottom-bar-inline">
+              <button class="tab tab-home" data-action="go-home"><span class="tab-icon"></span><span class="tab-label">홈</span></button>
+              <button class="tab tab-wishlist" data-action="go-wishlist"><span class="tab-icon"></span><span class="tab-label">위시리스트</span></button>
+              <button class="tab tab-challenge" data-action="go-status"><span class="tab-icon"></span><span class="tab-label">챌린지</span></button>
+              <button class="tab tab-spend active" data-action="go-spend"><span class="tab-icon"></span><span class="tab-label">내 소비</span></button>
             </nav>
           </section>
 
           <div id="modal-backdrop" class="modal-backdrop hidden">
             <div class="modal-card">
-              <h3>챌린지 추가가 완료되었습니다!</h3>
+              <h3 id="modal-title">챌린지 추가가 완료되었습니다!</h3>
               <p id="modal-message">챌린지 내역을 확인하러 가시겠어요?</p>
               <div class="modal-actions">
                 <button class="ghost-button" data-action="go-home-modal">홈으로 이동</button>
                 <button class="primary-button modal-confirm-button" data-action="confirm-modal">네</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="category-sheet-backdrop" class="sheet-backdrop hidden">
+            <div class="bottom-sheet">
+              <div class="sheet-handle"></div>
+              <button class="sheet-close" data-action="close-category-sheet" aria-label="닫기"></button>
+              <h3>카테고리를 골라주세요.</h3>
+              <div class="sheet-option-grid">
+                <button class="sheet-option" data-wishlist-preset="fashion">패션/잡화</button>
+                <button class="sheet-option" data-wishlist-preset="food">미식/푸드</button>
+                <button class="sheet-option" data-wishlist-preset="tech">테크/가전</button>
+                <button class="sheet-option" data-wishlist-preset="living">리빙/인테리어</button>
+                <button class="sheet-option" data-wishlist-preset="culture">여가/문화</button>
+                <button class="sheet-option" data-wishlist-preset="beauty">뷰티/웰니스</button>
+                <button class="sheet-option" data-wishlist-preset="sports">스포츠</button>
+                <button class="sheet-option" data-wishlist-preset="travel">여행</button>
+                <button class="sheet-option" data-wishlist-preset="career">배움/커리어</button>
+                <button class="sheet-option" data-wishlist-preset="etc">기타</button>
               </div>
             </div>
           </div>
