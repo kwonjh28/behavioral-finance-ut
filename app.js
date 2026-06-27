@@ -11,6 +11,9 @@ const ASSETS = {
   iconCafe: "https://www.figma.com/api/mcp/asset/692cc764-419c-49c5-a393-9e9f0e5e7e21",
   iconDining: "https://www.figma.com/api/mcp/asset/1dba0a96-7b44-41dc-b7d0-e2564a781f9d",
   iconShopping: "https://www.figma.com/api/mcp/asset/7e771fee-917b-49df-b627-4ccaf659cbef",
+  iconShoppingBack: "https://www.figma.com/api/mcp/asset/4a987b5c-1afa-43af-bd4f-184fbffcbc74",
+  iconShoppingHandle: "https://www.figma.com/api/mcp/asset/9e1101c3-c891-4b90-8063-ccc5dbf07380",
+  iconShoppingBody: "https://www.figma.com/api/mcp/asset/0fe0755b-abee-4633-9dff-493a3b6acfbf",
   iconFashion: "https://www.figma.com/api/mcp/asset/2a7d0101-902e-49d9-a968-7642b7e20862",
   wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
   wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
@@ -52,6 +55,8 @@ const TEXT = {
   hintSaving: "\uB9E4\uC6D4 \uC57D",
   hintSaved: "\uC544\uAEF4\uC694.",
 };
+
+const UT_ANALYSIS_MONTH = "2026-06";
 
 const INITIAL_SUMMARY = {
   monthlySavingGoal: 13870,
@@ -468,6 +473,99 @@ function isSampleSource(sourceName = appState.sourceName) {
   return sourceName === TEXT.sample;
 }
 
+function normalizeTransactionType(type, rawAmount) {
+  const normalized = String(type || "").replace(/\s+/g, "");
+  if ([TEXT.expense, "출금", "사용", "결제", "체크카드", "카드사용", "승인"].some((keyword) => normalized.includes(keyword))) {
+    return TEXT.expense;
+  }
+  if (Number(rawAmount) < 0) return TEXT.expense;
+  return type || "";
+}
+
+function getExpenseRows(transactions = appState.transactions) {
+  return transactions.filter((item) => normalizeTransactionType(item.type, item.rawAmount) === TEXT.expense && item.amount > 0 && item.date);
+}
+
+function getLatestMonthKey(transactions = appState.transactions) {
+  return getExpenseRows(transactions)
+    .map((item) => item.date.slice(0, 7))
+    .sort()
+    .at(-1) || null;
+}
+
+function getAnalysisMonthKey(transactions = appState.transactions) {
+  const expenseRows = getExpenseRows(transactions);
+  const hasUtMonth = expenseRows.some((item) => item.date.startsWith(UT_ANALYSIS_MONTH));
+  return hasUtMonth ? UT_ANALYSIS_MONTH : getLatestMonthKey(transactions);
+}
+
+function getCurrentMonthRows(transactions = appState.transactions) {
+  const monthKey = getAnalysisMonthKey(transactions);
+  if (!monthKey) return [];
+  return getExpenseRows(transactions).filter((item) => item.date.startsWith(monthKey));
+}
+
+function isOnlineShoppingTransaction(item) {
+  const source = `${item.major || ""} ${item.minor || ""} ${item.merchant || ""}`.toLowerCase();
+  return [
+    "온라인",
+    "쿠팡",
+    "네이버",
+    "컬리",
+    "무신사",
+    "지그재그",
+    "에이블리",
+    "오늘의집",
+    "11번가",
+    "g마켓",
+    "옥션",
+  ].some((keyword) => source.includes(keyword.toLowerCase()));
+}
+
+function formatTransactionDay(dateString) {
+  const date = new Date(`${dateString}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) return dateString;
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  return `${date.getDate()}일 (${weekdays[date.getDay()]})`;
+}
+
+function formatTransactionTime(value) {
+  if (!value) return "";
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}`;
+  }
+  if (typeof value === "number") {
+    const totalMinutes = Math.round(value * 24 * 60);
+    const hour = String(Math.floor(totalMinutes / 60) % 24).padStart(2, "0");
+    const minute = String(totalMinutes % 60).padStart(2, "0");
+    return `${hour}:${minute}`;
+  }
+  const text = String(value).trim();
+  const timeMatch = text.match(/(\d{1,2})[:시](\d{1,2})?/);
+  if (!timeMatch) return text;
+  const hour = String(Number(timeMatch[1])).padStart(2, "0");
+  const minute = String(Number(timeMatch[2] || 0)).padStart(2, "0");
+  return `${hour}:${minute}`;
+}
+
+function normalizeSpendCategoryKey(value, item = null) {
+  if (item && isOnlineShoppingTransaction(item)) return "online";
+  const normalized = String(value || "").replace(/\s+/g, "");
+  if (normalized.includes("온라인")) return "online";
+  if (normalized.includes("카페") || normalized.includes("간식") || normalized.includes("커피")) return TEXT.categoryCafe;
+  if (normalized.includes("식비") || normalized.includes("외식") || normalized.includes("음식")) return TEXT.categoryFood;
+  if (normalized.includes("교통")) return TEXT.categoryTraffic;
+  if (normalized.includes("생활")) return TEXT.categoryLife;
+  if (normalized.includes("패션") || normalized.includes("쇼핑") || value === TEXT.categoryShopping) return "패션/쇼핑";
+  return value || "기타";
+}
+
+function getCandidateMajor(item) {
+  if (isOnlineShoppingTransaction(item)) return "온라인쇼핑";
+  if (item.major === TEXT.categoryShopping) return "패션/쇼핑";
+  return item.major || "기타";
+}
+
 function refreshScreenScrollState() {
   document.querySelectorAll(".screen-scroll").forEach((container) => {
     const screen = container.closest(".screen")?.dataset.screen;
@@ -623,9 +721,30 @@ function getCategoryAsset(category, fallback = ASSETS.iconDining) {
   return categoryAssetMap[category] || fallback;
 }
 
+function getCategoryIconClass(category) {
+  if (category === TEXT.categoryCafe) return "category-icon-image--cafe";
+  if (category === TEXT.categoryFood || category === TEXT.categoryLife || category === TEXT.categoryTraffic) {
+    return "category-icon-image--dining";
+  }
+  if (category === "온라인쇼핑") return "category-icon-image--shopping";
+  if (category === TEXT.categoryShopping || category === "패션/쇼핑") return "category-icon-image--fashion";
+  return "category-icon-image--dining";
+}
+
 function renderCategoryIcon(category, alt = "", size = "default") {
+  if (category === "온라인쇼핑") {
+    return `
+      <span class="shopping-icon shopping-icon--${size}" role="img" aria-label="${alt}">
+        <img class="shopping-icon-part shopping-icon-back" src="${ASSETS.iconShoppingBack}" alt="" loading="lazy" />
+        <img class="shopping-icon-part shopping-icon-handle" src="${ASSETS.iconShoppingHandle}" alt="" loading="lazy" />
+        <img class="shopping-icon-part shopping-icon-body" src="${ASSETS.iconShoppingBody}" alt="" loading="lazy" />
+      </span>
+    `;
+  }
+
   const asset = getCategoryAsset(category);
-  return `<img class="category-icon-image category-icon-image--${size}" src="${asset}" alt="${alt}" loading="lazy" />`;
+  const iconClass = getCategoryIconClass(category);
+  return `<img class="category-icon-image category-icon-image--${size} ${iconClass}" src="${asset}" alt="${alt}" loading="lazy" />`;
 }
 
 function showModal(message, title = "챌린지 추가가 완료되었습니다!", mode = "challenge") {
@@ -647,11 +766,17 @@ function hideModal() {
 }
 
 function showCategorySheet() {
-  categorySheetBackdrop?.classList.remove("hidden");
+  if (!categorySheetBackdrop) return;
+  categorySheetBackdrop.classList.remove("hidden", "is-closing");
+  requestAnimationFrame(() => {
+    categorySheetBackdrop.classList.add("is-open");
+  });
 }
 
 function hideCategorySheet() {
-  categorySheetBackdrop?.classList.add("hidden");
+  if (!categorySheetBackdrop || categorySheetBackdrop.classList.contains("hidden")) return;
+  categorySheetBackdrop.classList.remove("is-open");
+  categorySheetBackdrop.classList.add("is-closing");
 }
 
 function getCurrentCandidate() {
@@ -671,11 +796,11 @@ function getChallengeSourceCandidate(challenge) {
 }
 
 function computeCandidates(transactions) {
-  const expenseRows = transactions.filter((item) => item.type === TEXT.expense && item.amount > 0);
+  const expenseRows = getExpenseRows(transactions);
   const grouped = new Map();
 
   expenseRows.forEach((item) => {
-    const key = item.major || "\uAE30\uD0C0";
+    const key = getCandidateMajor(item);
     if (!grouped.has(key)) {
       grouped.set(key, {
         id: slugify(key),
@@ -713,7 +838,16 @@ function computeCandidates(transactions) {
       const monthlyAmount = bucket.totalAmount / monthCount;
       const monthlyCount = bucket.totalCount / monthCount;
       const topSubcategories = [...bucket.subcategories.values()]
-        .sort((a, b) => b.totalAmount - a.totalAmount)
+        .map((subcategory) => ({
+          ...subcategory,
+          annualAmount: subcategory.totalAmount,
+          annualCount: subcategory.totalCount,
+          monthlyAmount: subcategory.totalAmount / monthCount,
+          monthlyCount: subcategory.totalCount / monthCount,
+          averageAmount: subcategory.totalCount ? subcategory.totalAmount / subcategory.totalCount : subcategory.totalAmount,
+          share: bucket.totalAmount ? subcategory.totalAmount / bucket.totalAmount : 0,
+        }))
+        .sort((a, b) => b.totalAmount - a.totalAmount || b.totalCount - a.totalCount)
         .slice(0, 3);
 
       return {
@@ -727,8 +861,7 @@ function computeCandidates(transactions) {
         topSubcategories,
       };
     })
-    .sort((a, b) => b.totalCount - a.totalCount)
-    .slice(0, 4);
+    .sort((a, b) => b.totalCount - a.totalCount);
 }
 
 function createChallengeTitle(major, minor) {
@@ -740,14 +873,35 @@ function createChallengeTitle(major, minor) {
   return `${major} ${TEXT.titleSaving}`;
 }
 
+function getTopSubcategories(candidate) {
+  return (candidate?.topSubcategories || [])
+    .slice()
+    .sort((a, b) => {
+      const amountA = a.totalAmount ?? a.annualAmount ?? 0;
+      const amountB = b.totalAmount ?? b.annualAmount ?? 0;
+      const countA = a.totalCount ?? a.annualCount ?? 0;
+      const countB = b.totalCount ?? b.annualCount ?? 0;
+      return amountB - amountA || countB - countA;
+    })
+    .slice(0, 3);
+}
+
 function getDetailSelection() {
   const candidate = getCurrentCandidate();
   if (!candidate) return null;
 
+  const topSubcategories = getTopSubcategories(candidate);
+  if (
+    appState.selectedSubcategory !== TEXT.all &&
+    !topSubcategories.some((item) => item.name === appState.selectedSubcategory)
+  ) {
+    appState.selectedSubcategory = TEXT.all;
+  }
+
   const subcategoryData =
     appState.selectedSubcategory === TEXT.all
       ? null
-      : candidate.topSubcategories.find((item) => item.name === appState.selectedSubcategory);
+      : topSubcategories.find((item) => item.name === appState.selectedSubcategory);
   const source = subcategoryData || candidate;
   const ratioOverride = source?.ratioOverrides?.[appState.selectedRatio.toFixed(1)] || null;
   const fallbackMonthlyAmount = subcategoryData
@@ -821,6 +975,8 @@ function recalculateSavingsSummary() {
     (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
     0,
   );
+  // UT simulation: uploaded spend shapes recommendations, while saved/account totals
+  // move from the seeded scenario only after the participant adds challenges.
   const extraMonthlySaving = Math.max(monthlyGoals - INITIAL_SUMMARY.monthlySavingGoal, 0);
 
   appState.monthlySavingGoal = monthlyGoals;
@@ -1039,7 +1195,7 @@ function renderWishlistAddForm() {
   registerButton.classList.toggle("disabled-button", !preset || appState.wishlistJustRegistered);
 }
 
-function getSpendCategories() {
+function getStaticSpendCategories() {
   return [
     { key: "all", label: "전체", count: 25, icon: "grid" },
     { key: TEXT.categoryCafe, label: "카페/간식", count: 8, icon: TEXT.categoryCafe },
@@ -1050,6 +1206,109 @@ function getSpendCategories() {
     { key: "술/유흥", label: "술/유흥", count: 2, icon: TEXT.categoryCafe },
     { key: "기타", label: "기타", count: 2, icon: "grid" },
   ];
+}
+
+function buildSpendModelFromTransactions() {
+  const monthRows = getCurrentMonthRows();
+  const total = monthRows.reduce((sum, item) => sum + item.amount, 0);
+  const categoryCounts = new Map();
+  const onlineCount = monthRows.filter(isOnlineShoppingTransaction).length;
+
+  monthRows.forEach((item) => {
+    const key = normalizeSpendCategoryKey(item.major, item);
+    categoryCounts.set(key, (categoryCounts.get(key) || 0) + 1);
+  });
+
+  const categories = [
+    { key: "all", label: "전체", count: monthRows.length, icon: "grid" },
+    ...[...categoryCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, count]) => ({
+        key,
+        label: key === "online" ? "온라인 쇼핑" : categoryLabelMap[key] || key,
+        count,
+        icon: key === "online" ? "온라인쇼핑" : key,
+      })),
+  ];
+
+  if (onlineCount && !categories.some((category) => category.key === "online")) {
+    categories.splice(Math.min(categories.length, 4), 0, {
+      key: "online",
+      label: "온라인 쇼핑",
+      count: onlineCount,
+      icon: "온라인쇼핑",
+    });
+  }
+
+  return {
+    total,
+    categories,
+    rows: monthRows,
+  };
+}
+
+function getRowsForSpendCategory(rows, key) {
+  if (key === "all") return rows;
+  if (key === "online") return rows.filter(isOnlineShoppingTransaction);
+  return rows.filter((item) => normalizeSpendCategoryKey(item.major, item) === key);
+}
+
+function groupSpendRows(rows) {
+  const groups = new Map();
+
+  rows
+    .slice()
+    .sort((a, b) => `${b.date} ${formatTransactionTime(b.time)}`.localeCompare(`${a.date} ${formatTransactionTime(a.time)}`))
+    .forEach((item) => {
+      if (!groups.has(item.date)) {
+        groups.set(item.date, {
+          date: formatTransactionDay(item.date),
+          rows: [],
+        });
+      }
+
+      groups.get(item.date).rows.push({
+        merchant: item.merchant,
+        time: formatTransactionTime(item.time),
+        amount: item.amount,
+      });
+    });
+
+  return [...groups.values()];
+}
+
+function getRowValue(row, keys, fallback = "") {
+  const foundKey = keys.find((key) => row[key] != null && row[key] !== "");
+  return foundKey ? row[foundKey] : fallback;
+}
+
+function getSpendModel() {
+  if (isSampleSource()) {
+    const selectedSpend = spendData[appState.selectedSpendCategory] || spendData.all;
+    return {
+      selected: selectedSpend,
+      categories: getStaticSpendCategories(),
+    };
+  }
+
+  const model = buildSpendModelFromTransactions();
+
+  if (!model.categories.some((category) => category.key === appState.selectedSpendCategory)) {
+    appState.selectedSpendCategory = "all";
+  }
+
+  const normalizedRows = getRowsForSpendCategory(model.rows, appState.selectedSpendCategory);
+  const normalizedTotal = normalizedRows.reduce((sum, item) => sum + item.amount, 0);
+
+  return {
+    selected: {
+      total: normalizedTotal,
+      shareLabel: "전체 중",
+      share: model.total ? Math.round((normalizedTotal / model.total) * 100) : 0,
+      groups: groupSpendRows(normalizedRows),
+    },
+    categories: model.categories,
+  };
 }
 
 function renderSpendCategoryIcon(category) {
@@ -1064,12 +1323,12 @@ function renderSpend() {
   const list = document.getElementById("spend-transaction-list");
   if (!categoryContainer || !list) return;
 
-  const selectedSpend = spendData[appState.selectedSpendCategory] || spendData.all;
+  const { selected: selectedSpend, categories } = getSpendModel();
   document.getElementById("spend-total").textContent = formatWon(selectedSpend.total);
   document.getElementById("spend-share-label").innerHTML = `${selectedSpend.shareLabel} <b>${selectedSpend.share}%</b>`;
   document.getElementById("spend-saving-amount").textContent = formatWon(appState.savingsAccount);
   categoryContainer.innerHTML = "";
-  getSpendCategories().forEach((category) => {
+  categories.forEach((category) => {
     const item = document.createElement("button");
     item.className = `spend-category${appState.selectedSpendCategory === category.key ? " active" : ""}`;
     item.dataset.spendCategory = category.key;
@@ -1091,11 +1350,11 @@ function renderSpend() {
     });
   });
 
-  list.innerHTML = selectedSpend.groups.map((group) => `
+  list.innerHTML = selectedSpend.groups.length ? selectedSpend.groups.map((group) => `
     <div class="transaction-day">
       <p>${group.date}</p>
-      <div class="transaction-divider"></div>
       ${group.rows.map((row) => `
+        <div class="transaction-divider"></div>
         <article class="transaction-row">
           <div>
             <strong>${row.merchant}</strong>
@@ -1105,12 +1364,24 @@ function renderSpend() {
         </article>
       `).join("")}
     </div>
-  `).join("");
+  `).join("") : `
+    <div class="transaction-empty">이번달 소비내역이 없어요.</div>
+  `;
 }
 
 function renderCandidateList() {
   const container = document.getElementById("candidate-list");
+  const footer = document.querySelector(".add-footer-note");
   container.innerHTML = "";
+
+  if (footer) {
+    footer.hidden = !isSampleSource();
+  }
+
+  if (!appState.candidateCategories.length) {
+    container.innerHTML = `<div class="candidate-empty">소비데이터를 업로드하면 챌린지 후보를 불러올게요.</div>`;
+    return;
+  }
 
   appState.candidateCategories.forEach((candidate) => {
     const item = document.createElement("article");
@@ -1206,7 +1477,7 @@ function renderDetail() {
 
   const subcategoryContainer = document.getElementById("detail-subcategory-chips");
   subcategoryContainer.innerHTML = "";
-  const subcategoryNames = [TEXT.all, ...candidate.topSubcategories.map((item) => item.name)];
+  const subcategoryNames = [TEXT.all, ...getTopSubcategories(candidate).map((item) => item.name)];
   subcategoryContainer.style.setProperty("--segment-count", String(Math.max(subcategoryNames.length, 1)));
   subcategoryNames.forEach((name) => {
     const chip = document.createElement("button");
@@ -1262,11 +1533,12 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
   appState.transactions = transactions;
   appState.sourceName = sourceName;
 
-  const expenseRows = transactions.filter((item) => item.type === TEXT.expense && item.amount > 0);
-  const monthKey = expenseRows[0]?.date?.slice(0, 7);
-  const monthRows = expenseRows.filter((item) => item.date.startsWith(monthKey));
+  const expenseRows = getExpenseRows(transactions);
+  const monthKey = getAnalysisMonthKey(transactions);
+  const monthRows = monthKey ? expenseRows.filter((item) => item.date.startsWith(monthKey)) : [];
   const isSample = isSampleSource(sourceName);
-  const candidates = isSample ? cloneData(sampleCandidateCategories) : computeCandidates(expenseRows);
+  const candidateRows = monthRows.length ? monthRows : expenseRows;
+  const candidates = isSample ? cloneData(sampleCandidateCategories) : computeCandidates(candidateRows);
 
   appState.currentMonthSpend = isSample
     ? 455250
@@ -1275,6 +1547,7 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
   appState.selectedCandidateId = candidates[0]?.id || null;
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
+  appState.selectedSpendCategory = "all";
   const cafeCandidate = candidates.find((item) => item.major === TEXT.categoryCafe);
   appState.challenges = [
     {
@@ -1301,12 +1574,15 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
     (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
     0,
   );
-  appState.totalSaved = 955000;
+  appState.savingsAccount = INITIAL_SUMMARY.savingsAccount;
+  appState.totalSaved = INITIAL_SUMMARY.totalSaved;
   appState.savingPeriodLabel = "1\uB144 6\uAC1C\uC6D4";
   appState.homeChallengeCountDisplay = 2;
   appState.statusChallengeCountDisplay = 2;
   appState.selectedChallengeId = appState.challenges[0]?.id || null;
-  statusText.textContent = `${sourceName} ${TEXT.statusApplied}`;
+  statusText.textContent = isSample
+    ? `${sourceName} ${TEXT.statusApplied}`
+    : `${sourceName} ${monthKey || ""} ${TEXT.statusApplied}`;
   renderAll();
 }
 
@@ -1330,16 +1606,18 @@ function parseWorkbook(file) {
     const rows = XLSX.utils.sheet_to_json(sheet, { raw: true });
     const transactions = rows
       .map((row) => {
-        const rawAmount = Number(row["\uAE08\uC561"]);
+        const rawAmount = Number(getRowValue(row, ["\uAE08\uC561", "\uC9C0\uCD9C\uAE08\uC561", "\uAC70\uB798\uAE08\uC561", "\uC774\uC6A9\uAE08\uC561", "\uC2B9\uC778\uAE08\uC561"], 0));
+        const rawType = getRowValue(row, ["\uD0C0\uC785", "\uAD6C\uBD84", "\uAC70\uB798\uAD6C\uBD84", "\uC785\uCD9C\uAE08\uAD6C\uBD84"], "");
         return {
-          date: formatExcelDate(row["\uB0A0\uC9DC"]),
-          time: row["\uC2DC\uAC04"],
-          type: row["\uD0C0\uC785"],
-          major: row["\uB300\uBD84\uB958"] || "\uAE30\uD0C0",
-          minor: row["\uC18C\uBD84\uB958"] || "\uAE30\uD0C0",
-          merchant: row["\uB0B4\uC6A9"] || "\uC774\uB984 \uC5C6\uC74C",
+          date: formatExcelDate(getRowValue(row, ["\uB0A0\uC9DC", "\uC77C\uC790", "\uAC70\uB798\uC77C", "\uC2B9\uC778\uC77C", "\uC774\uC6A9\uC77C"])),
+          time: getRowValue(row, ["\uC2DC\uAC04", "\uAC70\uB798\uC2DC\uAC04", "\uC2B9\uC778\uC2DC\uAC04", "\uC774\uC6A9\uC2DC\uAC04"], ""),
+          type: normalizeTransactionType(rawType, rawAmount),
+          rawAmount,
+          major: getRowValue(row, ["\uB300\uBD84\uB958", "\uCE74\uD14C\uACE0\uB9AC", "\uBD84\uB958", "\uC5C5\uC885"], "\uAE30\uD0C0"),
+          minor: getRowValue(row, ["\uC18C\uBD84\uB958", "\uC138\uBD80\uBD84\uB958", "\uC18C\uCE74\uD14C\uACE0\uB9AC", "\uC138\uBD80\uCE74\uD14C\uACE0\uB9AC"], "\uAE30\uD0C0"),
+          merchant: getRowValue(row, ["\uB0B4\uC6A9", "\uAC00\uB9F9\uC810", "\uC0AC\uC6A9\uCC98", "\uC801\uC694", "\uAC70\uB798\uB0B4\uC6A9"], "\uC774\uB984 \uC5C6\uC74C"),
           amount: Math.abs(rawAmount || 0),
-          paymentMethod: row["\uACB0\uC81C\uC218\uB2E8"] || "",
+          paymentMethod: getRowValue(row, ["\uACB0\uC81C\uC218\uB2E8", "\uCE74\uB4DC\uBA85", "\uACC4\uC88C", "\uC218\uB2E8"], ""),
         };
       })
       .filter((row) => row.date && row.type);
@@ -1547,6 +1825,13 @@ function bindActions() {
 
   categorySheetBackdrop?.addEventListener("click", (event) => {
     if (event.target === categorySheetBackdrop) hideCategorySheet();
+  });
+
+  categorySheetBackdrop?.querySelector(".bottom-sheet")?.addEventListener("transitionend", (event) => {
+    if (event.propertyName !== "transform") return;
+    if (!categorySheetBackdrop.classList.contains("is-closing")) return;
+    categorySheetBackdrop.classList.add("hidden");
+    categorySheetBackdrop.classList.remove("is-closing");
   });
 
   document.querySelectorAll("[data-wishlist-preset]").forEach((button) => {
