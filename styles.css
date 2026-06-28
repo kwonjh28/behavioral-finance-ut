@@ -364,6 +364,7 @@ h6 {
   align-items: baseline;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  line-height: inherit;
 }
 
 .rolling-slot {
@@ -930,6 +931,13 @@ h6 {
   font-weight: 600;
 }
 
+.candidate-average-pill--detail {
+  width: 150px;
+  min-width: 150px;
+  margin-top: 16px;
+  padding: 4px 12px;
+}
+
 .challenge-card h4 {
   margin: 0 0 4px;
   font-family: var(--font-var);
@@ -1288,6 +1296,46 @@ h6 {
   transform: rotate(45deg) translateY(-1px);
 }
 
+.sort-control {
+  position: relative;
+}
+
+.sort-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  width: 112px;
+  padding: 6px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(23, 23, 23, 0.12);
+}
+
+.sort-menu.hidden {
+  display: none;
+}
+
+.sort-menu button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b6b6b;
+  font-family: var(--font-static);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.sort-menu button.active {
+  background: #f4f4f4;
+  color: #2f2f2f;
+}
+
 .candidate-item {
   display: grid;
   grid-template-columns: 86px 1fr;
@@ -1300,26 +1348,52 @@ h6 {
 
 .candidate-summary {
   display: grid;
-  grid-template-columns: 86px 1fr;
+  grid-template-columns: 86px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
   padding: 0 8px;
 }
 
 .candidate-summary--detail {
+  grid-template-columns: 86px 230px;
+  gap: 20px;
   margin-bottom: 28px;
 }
 
 .candidate-summary--detail .candidate-summary-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
   width: 230px;
+  min-width: 0;
+}
+
+.candidate-summary-leading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 86px;
+}
+
+.candidate-summary-leading strong {
+  padding: 0 4px;
+  color: #2f2f2f;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.16px;
+  text-align: center;
+  word-break: keep-all;
 }
 
 .candidate-item strong,
-.candidate-summary-text strong {
+.candidate-summary-text > strong {
   color: #2f2f2f;
 }
 
-.candidate-summary-text strong {
+.candidate-summary-text > strong {
   display: block;
   margin-bottom: 10px;
   font-size: 16px;
@@ -1339,8 +1413,8 @@ h6 {
 }
 
 .candidate-summary--detail .summary-grid {
-  grid-template-columns: 44px 110px 50px;
-  column-gap: 12px;
+  grid-template-columns: 42px 110px 50px;
+  column-gap: 14px;
   align-items: center;
   justify-content: end;
   width: 230px;
@@ -1467,6 +1541,10 @@ h6 {
   color: #a8a8a8;
 }
 
+#detail-ratio-chips.is-disabled {
+  padding-top: 8px;
+}
+
 .detail-card-group {
   display: grid;
   gap: 12px;
@@ -1477,7 +1555,7 @@ h6 {
 }
 
 .info-card {
-  padding: 18px 20px;
+  padding: 20px;
   background: #fff;
   border: 1px solid #dcdcdc;
   border-radius: 16px;
@@ -1491,7 +1569,14 @@ h6 {
 
 .info-card strong {
   font-size: 24px;
+  line-height: 1.4;
   letter-spacing: -0.04em;
+}
+
+#detail-target-amount {
+  display: block;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .target-count-card {
@@ -1499,8 +1584,10 @@ h6 {
 }
 
 .target-count-input-wrap {
+  position: relative;
   display: inline-flex;
   align-items: baseline;
+  gap: 2px;
   color: #2f2f2f;
   font-size: 24px;
   font-weight: 600;
@@ -1509,31 +1596,39 @@ h6 {
 }
 
 .target-count-input-wrap input {
-  width: 3.4ch;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 100%;
   padding: 0;
   border: 0;
   outline: 0;
   background: transparent;
-  color: inherit;
+  color: transparent;
   font: inherit;
   letter-spacing: inherit;
+  caret-color: var(--accent);
 }
 
-.target-count-input-wrap input:focus {
-  caret-color: var(--accent);
+#detail-target-count-display {
+  display: inline-block;
+  min-width: 1.4ch;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .info-card--name {
   min-height: 90px;
-  padding-top: 20px;
 }
 
 .info-card--name strong {
   display: block;
-  color: #4f4f4f;
-  font-size: 18px;
+  color: #2f2f2f;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.4;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.16px;
 }
 
 .info-card--name strong.is-placeholder {
@@ -2773,7 +2868,7 @@ h6 {
   letter-spacing: -0.32px;
 }
 
-.spend-total-row span {
+#spend-share-label {
   color: #2f2f2f;
   font-size: 16px;
   font-weight: 400;
@@ -2781,7 +2876,7 @@ h6 {
   letter-spacing: -0.16px;
 }
 
-.spend-total-row b {
+#spend-share-label b {
   color: #ff4000;
   font-size: 18px;
   font-weight: 600;

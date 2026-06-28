@@ -119,6 +119,7 @@ const appState = {
   sourceName: TEXT.sample,
   transactions: [],
   candidateCategories: [],
+  candidateSort: "count",
   selectedCandidateId: null,
   selectedChallengeId: "habit-cafe",
   challengeFilter: "all",
@@ -444,7 +445,10 @@ function setRollingText(element, nextText, options = {}) {
   element.setAttribute("aria-label", normalized);
 
   if (!animate || previous == null || previous === normalized) {
-    element.textContent = normalized;
+    const wrapper = document.createElement("span");
+    wrapper.className = "rolling-value";
+    wrapper.textContent = normalized;
+    element.replaceChildren(wrapper);
     return;
   }
 
@@ -967,6 +971,10 @@ function createChallengeTitle(major, minor) {
   return `${major} ${TEXT.titleSaving}`;
 }
 
+function createSavingChallengeTitle(label) {
+  return `${label} 덜 쓰고 돈 아끼기`;
+}
+
 function getTopSubcategories(candidate) {
   return (candidate?.topSubcategories || [])
     .slice()
@@ -1008,6 +1016,7 @@ function getDetailSelection() {
   const baseMonthlyCount = source.monthlyCount ?? fallbackMonthlyCount;
   const annualAmount = source.annualAmount ?? candidate.annualAmount;
   const annualCount = source.annualCount ?? candidate.annualCount;
+  const averageAmount = source.averageAmount ?? (annualCount ? annualAmount / annualCount : annualAmount);
   const ratioTargetAmount = ratioOverride?.targetAmount ?? Math.round(baseMonthlyAmount * appState.selectedRatio);
   const ratioSavingMonthly = ratioOverride?.monthlySaving ?? Math.max(Math.round(baseMonthlyAmount - ratioTargetAmount), 0);
   const ratioTargetCount = ratioOverride?.targetCount ?? Math.max(Math.round(baseMonthlyCount * appState.selectedRatio), 1);
@@ -1025,9 +1034,10 @@ function getDetailSelection() {
   const yearlySaving = usesManualCount
     ? savingMonthly * 12
     : ratioOverride?.yearlySaving ?? savingMonthly * 12;
-  const challengeTitle = source.title || candidate.defaultTitle || candidate.title;
-  const displayName = subcategoryData?.title || candidate.placeholderName || challengeTitle;
-  const nameIsPlaceholder = !subcategoryData?.title && Boolean(candidate.placeholderName);
+  const selectedLabel = subcategoryData?.name || categoryLabelMap[candidate.major] || candidate.major;
+  const challengeTitle = createSavingChallengeTitle(selectedLabel);
+  const displayName = challengeTitle;
+  const nameIsPlaceholder = false;
   const challengeId = subcategoryData ? `${candidate.id}-${slugify(subcategoryData.name)}` : candidate.id;
 
   return {
@@ -1037,6 +1047,7 @@ function getDetailSelection() {
     annualCount,
     baseMonthlyAmount,
     baseMonthlyCount,
+    averageAmount,
     targetAmount,
     savingMonthly,
     targetCount,
@@ -1480,7 +1491,11 @@ function renderSpend() {
   bindSpendCategoryDrag(categoryContainer);
 
   const { selected: selectedSpend, categories } = getSpendModel();
-  document.getElementById("spend-total").textContent = formatWon(selectedSpend.total);
+  setRollingText(
+    document.getElementById("spend-total"),
+    formatWon(selectedSpend.total),
+    { animate: document.querySelector('.screen.active')?.dataset.screen === "spend", duration: 520, stagger: 22 },
+  );
   document.getElementById("spend-share-label").innerHTML = `${selectedSpend.shareLabel} <b>${selectedSpend.share}%</b>`;
   document.getElementById("spend-saving-amount").textContent = formatWon(appState.savingsAccount);
   categoryContainer.innerHTML = "";
@@ -1529,9 +1544,38 @@ function renderSpend() {
   `;
 }
 
+function getSortedCandidateCategories() {
+  return appState.candidateCategories
+    .slice()
+    .sort((a, b) => {
+      if (appState.candidateSort === "amount") {
+        return (b.annualAmount || 0) - (a.annualAmount || 0) || (b.annualCount || 0) - (a.annualCount || 0);
+      }
+
+      return (b.annualCount || 0) - (a.annualCount || 0) || (b.annualAmount || 0) - (a.annualAmount || 0);
+    });
+}
+
+function renderCandidateSortControl() {
+  const sortButton = document.getElementById("candidate-sort-button");
+  const sortMenu = document.getElementById("candidate-sort-menu");
+  if (!sortButton || !sortMenu) return;
+
+  const labels = {
+    count: "횟수많은순",
+    amount: "금액많은순",
+  };
+  sortButton.textContent = labels[appState.candidateSort] || labels.count;
+  sortButton.setAttribute("aria-expanded", String(!sortMenu.classList.contains("hidden")));
+  sortMenu.querySelectorAll("[data-candidate-sort]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.candidateSort === appState.candidateSort);
+  });
+}
+
 function renderCandidateList() {
   const container = document.getElementById("candidate-list");
   const footer = document.querySelector(".add-footer-note");
+  renderCandidateSortControl();
   container.innerHTML = "";
 
   if (footer) {
@@ -1543,7 +1587,7 @@ function renderCandidateList() {
     return;
   }
 
-  appState.candidateCategories.forEach((candidate) => {
+  getSortedCandidateCategories().forEach((candidate) => {
     const item = document.createElement("article");
     item.className = "candidate-item";
     item.dataset.candidateId = candidate.id;
@@ -1588,8 +1632,8 @@ function renderDetail(options = {}) {
   const shouldAnimateNumbers = options.animateNumbers !== false && document.querySelector('.screen.active')?.dataset.screen === "detail";
 
   document.getElementById("detail-category-title").textContent =
-    categoryLabelMap[candidate.major] || candidate.major;
-  document.querySelector(".candidate-summary .category-icon").innerHTML = renderCategoryIcon(
+    subcategoryData?.name || categoryLabelMap[candidate.major] || candidate.major;
+  document.querySelector(".candidate-summary-leading .category-icon").innerHTML = renderCategoryIcon(
     candidate.major,
     candidate.major,
     "small",
@@ -1615,12 +1659,17 @@ function renderDetail(options = {}) {
     formatCountMetric(selection.baseMonthlyCount),
     { animate: shouldAnimateNumbers },
   );
+  setRollingText(
+    document.getElementById("detail-average-amount"),
+    formatWon(selection.averageAmount),
+    { animate: shouldAnimateNumbers },
+  );
   challengeNameEl.textContent = selection.displayName;
   challengeNameEl.classList.toggle("is-placeholder", selection.nameIsPlaceholder);
   setRollingText(
     document.getElementById("detail-target-amount"),
     formatWon(selection.targetAmount),
-    { animate: shouldAnimateNumbers, duration: 560, stagger: 24 },
+    { animate: shouldAnimateNumbers, duration: 520, stagger: 22 },
   );
   document.getElementById("target-amount-card")?.classList.toggle("active-card", appState.detailTargetMode === "ratio");
   const targetCountCard = document.getElementById("target-count-card");
@@ -1629,6 +1678,11 @@ function renderDetail(options = {}) {
   if (targetCountInput && document.activeElement !== targetCountInput) {
     targetCountInput.value = String(selection.targetCount);
   }
+  setRollingText(
+    document.getElementById("detail-target-count-display"),
+    String(selection.targetCount),
+    { animate: shouldAnimateNumbers, duration: 480, stagger: 20 },
+  );
   const detailSavingTextEl = document.getElementById("detail-saving-text");
   detailSavingTextEl.textContent = formatMonthlySavingText(selection.savingMonthly);
   detailSavingTextEl.setAttribute("aria-label", detailSavingTextEl.textContent);
@@ -1713,13 +1767,13 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
   const monthKey = getAnalysisMonthKey(transactions);
   const monthRows = monthKey ? expenseRows.filter((item) => item.date.startsWith(monthKey)) : [];
   const isSample = isSampleSource(sourceName);
-  const candidateRows = monthRows.length ? monthRows : expenseRows;
-  const candidates = isSample ? cloneData(sampleCandidateCategories) : computeCandidates(candidateRows);
+  const candidates = isSample ? cloneData(sampleCandidateCategories) : computeCandidates(expenseRows);
 
   appState.currentMonthSpend = isSample
     ? 455250
     : getNetExpenseAmount(monthRows);
   appState.candidateCategories = candidates;
+  appState.candidateSort = "count";
   appState.selectedCandidateId = candidates[0]?.id || null;
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
@@ -1869,6 +1923,7 @@ function resetPrototype() {
 
   appState.lastScreen = "home";
   appState.challengeFilter = "all";
+  appState.candidateSort = "count";
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
   resetDetailTargetMode();
@@ -1997,6 +2052,28 @@ function bindActions() {
     });
   });
 
+  const candidateSortButton = document.getElementById("candidate-sort-button");
+  const candidateSortMenu = document.getElementById("candidate-sort-menu");
+  candidateSortButton?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    candidateSortMenu?.classList.toggle("hidden");
+    renderCandidateSortControl();
+  });
+  candidateSortMenu?.querySelectorAll("[data-candidate-sort]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      appState.candidateSort = button.dataset.candidateSort || "count";
+      candidateSortMenu.classList.add("hidden");
+      renderCandidateList();
+    });
+  });
+  document.addEventListener("click", (event) => {
+    if (!candidateSortMenu || candidateSortMenu.classList.contains("hidden")) return;
+    if (event.target.closest(".sort-control")) return;
+    candidateSortMenu.classList.add("hidden");
+    renderCandidateSortControl();
+  });
+
   document.getElementById("preview-toggle")?.addEventListener("click", () => {
     appState.previewUsesAverage = !appState.previewUsesAverage;
     renderChallengeOverview();
@@ -2008,7 +2085,7 @@ function bindActions() {
   });
   targetCountInput?.addEventListener("focus", () => {
     activateManualTargetCount(targetCountInput.value);
-    renderDetail({ animateNumbers: false });
+    renderDetail();
     requestAnimationFrame(() => {
       targetCountInput.focus();
       targetCountInput.select();
@@ -2019,7 +2096,7 @@ function bindActions() {
     targetCountInput.value = sanitized;
     appState.detailTargetMode = "count";
     appState.manualTargetCount = sanitized ? Math.max(Number(sanitized), 1) : null;
-    renderDetail({ animateNumbers: false });
+    renderDetail();
   });
   targetCountInput?.addEventListener("blur", () => {
     const selection = getDetailSelection();
