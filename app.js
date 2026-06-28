@@ -26,6 +26,10 @@ const ASSETS = {
   iconMedical: "https://www.figma.com/api/mcp/asset/b448e942-c052-4c07-ad2a-a347db4f368f",
   iconHousing: "https://www.figma.com/api/mcp/asset/659e4587-0ab0-498c-b5ee-204a95c30c59",
   iconGame: "https://www.figma.com/api/mcp/asset/2de0405f-d8b8-42b5-a240-d82544ace06c",
+  iconTravel: "https://www.figma.com/api/mcp/asset/cf83c080-2f3f-484a-bf20-8d349fb0d1f9",
+  iconFinance: "https://www.figma.com/api/mcp/asset/aad0465c-f127-4314-8309-c5e94744ab49",
+  iconWine: "https://www.figma.com/api/mcp/asset/8cb165d5-9a62-4885-b070-3fd2d2242bb1",
+  iconLife: "https://www.figma.com/api/mcp/asset/d85e7320-a8c5-4542-98a9-e4b6200f4c6e",
   wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
   wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
   wishSnowman: "https://www.figma.com/api/mcp/asset/c0481063-63ed-430c-aabd-e2fde156b1f2",
@@ -287,12 +291,14 @@ const categoryLabelMap = {
   "\uC8FC\uAC70/\uD1B5\uC2E0": "\uC8FC\uAC70/\uD1B5\uC2E0",
   "\uACBD\uC870/\uC120\uBB3C": "\uACBD\uC870/\uC120\uBB3C",
   "\uC758\uB8CC\uAC74\uAC15": "\uC758\uB8CC\uAC74\uAC15",
+  "\uC5EC\uD589/\uC219\uBC15": "\uC5EC\uD589/\uC219\uBC15",
+  "\uAE08\uC735": "\uAE08\uC735",
+  "\uC220/\uC720\uD765": "\uC220/\uC720\uD765",
 };
 
 const categoryAssetMap = {
   [TEXT.categoryCafe]: ASSETS.iconCafe,
   [TEXT.categoryFood]: ASSETS.iconDining,
-  [TEXT.categoryLife]: ASSETS.iconDining,
   [TEXT.categoryTraffic]: ASSETS.iconDining,
   [TEXT.categoryShopping]: ASSETS.iconFashion,
   "\uC628\uB77C\uC778\uC1FC\uD551": ASSETS.iconShopping,
@@ -300,6 +306,7 @@ const categoryAssetMap = {
 };
 
 const categoryMaskAssetMap = {
+  [TEXT.categoryLife]: { asset: ASSETS.iconLife, className: "category-mask-icon--life" },
   "\uAD50\uC721/\uD559\uC2B5": { asset: ASSETS.iconEducation, className: "category-mask-icon--education" },
   "\uBB38\uD654/\uC5EC\uAC00": { asset: ASSETS.iconGame, className: "category-mask-icon--game" },
   "\uBC18\uB824\uB3D9\uBB3C": { asset: ASSETS.iconPet, className: "category-mask-icon--pet" },
@@ -308,6 +315,9 @@ const categoryMaskAssetMap = {
   "\uC8FC\uAC70/\uD1B5\uC2E0": { asset: ASSETS.iconHousing, className: "category-mask-icon--housing" },
   "\uACBD\uC870/\uC120\uBB3C": { asset: ASSETS.iconCommunication, className: "category-mask-icon--communication" },
   "\uC758\uB8CC\uAC74\uAC15": { asset: ASSETS.iconMedical, className: "category-mask-icon--medical" },
+  "\uC5EC\uD589/\uC219\uBC15": { asset: ASSETS.iconTravel, className: "category-mask-icon--travel" },
+  "\uAE08\uC735": { asset: ASSETS.iconFinance, className: "category-mask-icon--finance" },
+  "\uC220/\uC720\uD765": { asset: ASSETS.iconWine, className: "category-mask-icon--wine" },
 };
 
 const sampleTransactions = [
@@ -428,6 +438,40 @@ function formatCountMetric(value) {
 
 function formatMonthlySavingText(value) {
   return `${TEXT.hintSaving} ${formatWon(value)} ${TEXT.hintSaved}`;
+}
+
+function formatKoreanYearMonth(date) {
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+}
+
+function addMonths(date, months) {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function getMonthlyChallengeSavingTotal() {
+  const activeMonthlySaving = appState.challenges.reduce((sum, challenge) => {
+    if (challenge.status === "completed") return sum;
+    return sum + (challenge.monthlySavingTarget || 0);
+  }, 0);
+
+  return activeMonthlySaving || appState.monthlySavingGoal || INITIAL_SUMMARY.monthlySavingGoal;
+}
+
+function getWishlistProgressModel(item) {
+  const price = Math.max(Number(item?.price || 0), 0);
+  const savedAmount = Math.max(Number(appState.savingsAccount || 0), 0);
+  const rawPercent = price ? (savedAmount / price) * 100 : 0;
+  const percent = Math.max(0, Math.min(Math.round(rawPercent), 100));
+  const monthlySaving = Math.max(getMonthlyChallengeSavingTotal(), 1);
+  const remainingAmount = Math.max(price - savedAmount, 0);
+  const monthsToGoal = remainingAmount > 0 ? Math.ceil(remainingAmount / monthlySaving) : 0;
+  const expectedDate = addMonths(new Date(), monthsToGoal);
+
+  return {
+    savedAmount,
+    percent,
+    expectedAt: formatKoreanYearMonth(expectedDate),
+  };
 }
 
 function setRollingText(element, nextText, options = {}) {
@@ -617,6 +661,9 @@ function normalizeSpendCategoryKey(value, item = null) {
   if (normalized.includes("주거") || normalized.includes("월세") || normalized.includes("관리비") || normalized.includes("인테리어") || normalized.includes("통신")) return "주거/통신";
   if (normalized.includes("경조") || normalized.includes("선물") || normalized.includes("축의") || normalized.includes("조의")) return "경조/선물";
   if (normalized.includes("의료") || normalized.includes("병원") || normalized.includes("약국") || normalized.includes("건강")) return "의료건강";
+  if (normalized.includes("여행") || normalized.includes("숙박") || normalized.includes("항공") || normalized.includes("호텔")) return "여행/숙박";
+  if (normalized.includes("금융") || normalized.includes("보험") || normalized.includes("대출") || normalized.includes("이자") || normalized.includes("수수료")) return "금융";
+  if (normalized.includes("술") || normalized.includes("유흥") || normalized.includes("주점") || normalized.includes("와인") || normalized.includes("맥주")) return "술/유흥";
   if (normalized.includes("생활")) return TEXT.categoryLife;
   if (normalized.includes("패션") || normalized.includes("쇼핑") || value === TEXT.categoryShopping) return "패션/쇼핑";
   return value || "기타";
@@ -786,7 +833,7 @@ function getCategoryAsset(category, fallback = ASSETS.iconDining) {
 
 function getCategoryIconClass(category) {
   if (category === TEXT.categoryCafe) return "category-icon-image--cafe";
-  if (category === TEXT.categoryFood || category === TEXT.categoryLife || category === TEXT.categoryTraffic) {
+  if (category === TEXT.categoryFood || category === TEXT.categoryTraffic) {
     return "category-icon-image--dining";
   }
   if (category === "온라인쇼핑") return "category-icon-image--shopping";
@@ -1241,8 +1288,10 @@ function renderChallengeCards(containerId, challenges, options = {}) {
 }
 
 function renderWishlistCard(item, options = {}) {
+  const progress = getWishlistProgressModel(item);
+  const showProgress = options.showProgress !== false;
   const card = document.createElement("article");
-  card.className = "wishlist-card wishlist-card--with-progress";
+  card.className = `wishlist-card${showProgress ? " wishlist-card--with-progress" : ""}`;
   card.innerHTML = `
     <div class="wishlist-image">
       <img src="${item.image}" alt="" loading="lazy" />
@@ -1250,10 +1299,12 @@ function renderWishlistCard(item, options = {}) {
     <div class="wishlist-copy">
       <strong>${item.title}</strong>
       <p>${formatWon(item.price)}</p>
-      <div class="wishlist-progress">
-        <span>${item.progress}%</span>
-        <div><i style="width:${item.progress}%"></i></div>
-      </div>
+      ${showProgress ? `
+        <div class="wishlist-progress">
+          <span>${progress.percent}%</span>
+          <div><i style="width:${progress.percent}%"></i></div>
+        </div>
+      ` : ""}
     </div>
   `;
   card.addEventListener("click", () => {
@@ -1265,6 +1316,15 @@ function renderWishlistCard(item, options = {}) {
     card.classList.add("wishlist-card--compact");
   }
   return card;
+}
+
+function renderHomeWishlist() {
+  const container = document.getElementById("home-wishlist-grid");
+  if (!container) return;
+  container.innerHTML = "";
+  appState.wishlistItems.slice(0, 2).forEach((item) => {
+    container.appendChild(renderWishlistCard(item, { showProgress: false }));
+  });
 }
 
 function renderWishlist() {
@@ -1279,20 +1339,20 @@ function renderWishlist() {
 function renderWishlistDetail() {
   const item = getCurrentWishlistItem();
   if (!item) return;
-  const percent = Math.max(0, Math.min(item.progress, 100));
+  const progress = getWishlistProgressModel(item);
 
   document.getElementById("wishlist-detail-image").src = item.image;
   document.getElementById("wishlist-detail-category").textContent = item.category;
   document.getElementById("wishlist-detail-title").textContent = item.title;
   document.getElementById("wishlist-detail-price").textContent = formatWon(item.price);
-  document.getElementById("wish-progress-fill").style.width = `${percent}%`;
-  document.getElementById("wish-progress-bubble").style.left = `${percent}%`;
-  document.getElementById("wish-progress-bubble").textContent = formatWon(item.savedAmount);
-  document.getElementById("wish-achievement").textContent = `달성률 ${percent}%`;
+  document.getElementById("wish-progress-fill").style.width = `${progress.percent}%`;
+  document.getElementById("wish-progress-bubble").style.left = `${progress.percent}%`;
+  document.getElementById("wish-progress-bubble").textContent = formatWon(progress.savedAmount);
+  document.getElementById("wish-achievement").textContent = `달성률 ${progress.percent}%`;
 
   const metaRows = document.querySelectorAll(".wish-meta div");
   if (metaRows[0]) metaRows[0].querySelector("strong").textContent = item.registeredAt;
-  if (metaRows[1]) metaRows[1].querySelector("strong").textContent = item.expectedAt;
+  if (metaRows[1]) metaRows[1].querySelector("strong").textContent = progress.expectedAt;
 }
 
 function renderWishlistAddForm() {
@@ -1324,7 +1384,7 @@ function getStaticSpendCategories() {
     { key: "패션/쇼핑", label: "패션/쇼핑", count: 5, icon: "패션/쇼핑" },
     { key: "online", label: "온라인 쇼핑", count: 4, icon: "온라인쇼핑" },
     { key: TEXT.categoryTraffic, label: "교통", count: 2, icon: TEXT.categoryTraffic },
-    { key: "술/유흥", label: "술/유흥", count: 2, icon: TEXT.categoryCafe },
+    { key: "술/유흥", label: "술/유흥", count: 2, icon: "술/유흥" },
     { key: "기타", label: "기타", count: 2, icon: "grid" },
   ];
 }
@@ -1740,6 +1800,7 @@ function renderAll() {
   renderCandidateList();
   renderDetail();
   renderChallengeOverview();
+  renderHomeWishlist();
   renderWishlist();
   renderWishlistDetail();
   renderWishlistAddForm();
@@ -1897,20 +1958,23 @@ function completeChallenge() {
 
   if (existingIndex >= 0) {
     const previous = appState.challenges[existingIndex];
-    appState.challenges[existingIndex] = {
+    const updatedChallenge = {
       ...previous,
       ...challenge,
       currentAmount: previous.currentAmount || challenge.currentAmount,
       currentCount: previous.currentCount || challenge.currentCount,
       startDate: previous.startDate || challenge.startDate,
     };
+    appState.challenges.splice(existingIndex, 1);
+    appState.challenges.unshift(updatedChallenge);
   } else {
-    appState.challenges.push(challenge);
+    appState.challenges.unshift(challenge);
   }
 
   const displayCount = Math.max(appState.challenges.length, 2);
   appState.homeChallengeCountDisplay = displayCount;
   appState.statusChallengeCountDisplay = displayCount;
+  appState.challengeFilter = "all";
   appState.selectedChallengeId = challenge.id;
   renderAll();
   showModal(TEXT.modalAdded);
@@ -1994,11 +2058,8 @@ function bindActions() {
         const normalizedPreset = {
           ...preset,
           id: preset.id || slugify(preset.title),
-          progress: preset.progress ?? 58,
-          savedAmount: preset.savedAmount ?? 32500,
           status: "in-progress",
           registeredAt: preset.registeredAt || "2026년 6월 27일",
-          expectedAt: preset.expectedAt || "2026년 11월",
         };
         const existingIndex = appState.wishlistItems.findIndex((item) => item.id === normalizedPreset.id);
         if (existingIndex >= 0) {

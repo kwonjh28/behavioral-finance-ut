@@ -6,7 +6,7 @@
     <title>세이빙 챌린지 프로토타입</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="./styles.css?v=20260628-21" />
+    <link rel="stylesheet" href="./styles.css?v=20260629-6" />
   </head>
   <body>
     <div class="desktop-shell">
@@ -88,7 +88,7 @@
               </header>
 
               <section class="quick-stats">
-                <article class="stat-card">
+                <article class="stat-card" data-action="go-spend" aria-label="내 소비 화면으로 이동">
                   <div class="stat-card-copy">
                     <p>이번달 지출</p>
                     <strong id="home-month-spend">455,250원</strong>
@@ -121,26 +121,7 @@
                   <h3>위시리스트</h3>
                   <button class="text-button" data-action="go-wishlist">더보기</button>
                 </div>
-                <div class="wishlist-grid">
-                  <article class="wishlist-card" data-action="open-wishlist-primary">
-                    <div class="wishlist-image">
-                      <img id="wishlist-image-1" alt="" />
-                    </div>
-                    <div class="wishlist-copy">
-                      <strong>일광전구 스노우맨</strong>
-                      <p>110,000원</p>
-                    </div>
-                  </article>
-                  <article class="wishlist-card" data-action="open-wishlist-secondary">
-                    <div class="wishlist-image">
-                      <img id="wishlist-image-2" alt="" />
-                    </div>
-                    <div class="wishlist-copy">
-                      <strong>스탠리 텀블러</strong>
-                      <p>49,000원</p>
-                    </div>
-                  </article>
-                </div>
+                <div id="home-wishlist-grid" class="wishlist-grid"></div>
               </section>
             </div>
 
@@ -591,6 +572,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="./app.js?v=20260628-21"></script>
+    <script src="./app.js?v=20260629-6"></script>
   </body>
 </html>
