@@ -1796,7 +1796,7 @@ function renderAll() {
   document.getElementById("home-challenge-count").textContent = `${appState.homeChallengeCountDisplay || appState.challenges.length}\uAC74`;
   renderChallengeCards("home-challenge-list", appState.challenges.slice(0, 2), { sourceScreen: "home" });
   renderChallengeCards("all-challenge-list", filteredChallenges, { sourceScreen: "my-challenges" });
-  renderChallengeCards("status-challenge-list", appState.challenges.slice(0, 1), { sourceScreen: "status" });
+  renderChallengeCards("status-challenge-list", appState.challenges, { sourceScreen: "status" });
   renderCandidateList();
   renderDetail();
   renderChallengeOverview();
@@ -1869,8 +1869,8 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
   appState.savingsAccount = INITIAL_SUMMARY.savingsAccount;
   appState.totalSaved = INITIAL_SUMMARY.totalSaved;
   appState.savingPeriodLabel = "1\uB144 6\uAC1C\uC6D4";
-  appState.homeChallengeCountDisplay = 2;
-  appState.statusChallengeCountDisplay = 2;
+  appState.homeChallengeCountDisplay = 1;
+  appState.statusChallengeCountDisplay = 1;
   appState.selectedChallengeId = appState.challenges[0]?.id || null;
   statusText.textContent = isSample
     ? `${sourceName} ${TEXT.statusApplied}`
@@ -1965,13 +1965,12 @@ function completeChallenge() {
       currentCount: previous.currentCount || challenge.currentCount,
       startDate: previous.startDate || challenge.startDate,
     };
-    appState.challenges.splice(existingIndex, 1);
-    appState.challenges.unshift(updatedChallenge);
+    appState.challenges[existingIndex] = updatedChallenge;
   } else {
-    appState.challenges.unshift(challenge);
+    appState.challenges.push(challenge);
   }
 
-  const displayCount = Math.max(appState.challenges.length, 2);
+  const displayCount = appState.challenges.length;
   appState.homeChallengeCountDisplay = displayCount;
   appState.statusChallengeCountDisplay = displayCount;
   appState.challengeFilter = "all";
