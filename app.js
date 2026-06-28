@@ -15,6 +15,17 @@ const ASSETS = {
   iconShoppingHandle: "https://www.figma.com/api/mcp/asset/9e1101c3-c891-4b90-8063-ccc5dbf07380",
   iconShoppingBody: "https://www.figma.com/api/mcp/asset/0fe0755b-abee-4633-9dff-493a3b6acfbf",
   iconFashion: "https://www.figma.com/api/mcp/asset/2a7d0101-902e-49d9-a968-7642b7e20862",
+  iconEducation: "https://www.figma.com/api/mcp/asset/d9cc9c4f-52aa-4a94-b359-f077c7109133",
+  iconPet: "https://www.figma.com/api/mcp/asset/45f7538d-1c4c-4f5f-ad87-e4304ba36341",
+  iconBeauty: "https://www.figma.com/api/mcp/asset/a547f3ff-95bf-4bfc-9223-6b1bc07bd07a",
+  iconBusBottom: "https://www.figma.com/api/mcp/asset/1c0d6226-9d45-4085-b559-50e0a1e2dea9",
+  iconBusTop: "https://www.figma.com/api/mcp/asset/959175e1-f523-4a5b-a636-30182cb7b966",
+  iconBusMiddle: "https://www.figma.com/api/mcp/asset/60761c59-4a18-4364-b6d8-819f4488e9c0",
+  iconTransport: "https://www.figma.com/api/mcp/asset/a444140a-be2c-4e0d-b870-93feb969412f",
+  iconCommunication: "https://www.figma.com/api/mcp/asset/673e7438-bb74-4ab2-9d53-f16ce5f142a5",
+  iconMedical: "https://www.figma.com/api/mcp/asset/b448e942-c052-4c07-ad2a-a347db4f368f",
+  iconHousing: "https://www.figma.com/api/mcp/asset/659e4587-0ab0-498c-b5ee-204a95c30c59",
+  iconGame: "https://www.figma.com/api/mcp/asset/2de0405f-d8b8-42b5-a240-d82544ace06c",
   wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
   wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
   wishSnowman: "https://www.figma.com/api/mcp/asset/c0481063-63ed-430c-aabd-e2fde156b1f2",
@@ -113,6 +124,8 @@ const appState = {
   challengeFilter: "all",
   selectedSubcategory: TEXT.all,
   selectedRatio: 0.9,
+  detailTargetMode: "ratio",
+  manualTargetCount: null,
   previewUsesAverage: true,
   selectedSpendCategory: "all",
   selectedWishlistId: "snowman",
@@ -134,7 +147,7 @@ const appState = {
       baseMonthlyAmount: 73860,
       baseMonthlyCount: 12,
       monthlySavingTarget: 13870,
-      detailMonthlySaving: 6155,
+      detailMonthlySaving: 13870,
       totalSaving: 48650,
       startDate: "2025.06.15",
       history: [15780, 14900, 14200],
@@ -265,6 +278,14 @@ const categoryLabelMap = {
   [TEXT.categoryShopping]: TEXT.categoryShopping,
   "\uC628\uB77C\uC778\uC1FC\uD551": "\uC628\uB77C\uC778\uC1FC\uD551",
   "\uD328\uC158/\uC1FC\uD551": "\uD328\uC158/\uC1FC\uD551",
+  "\uAD50\uC721/\uD559\uC2B5": "\uAD50\uC721/\uD559\uC2B5",
+  "\uBB38\uD654/\uC5EC\uAC00": "\uBB38\uD654/\uC5EC\uAC00",
+  "\uBC18\uB824\uB3D9\uBB3C": "\uBC18\uB824\uB3D9\uBB3C",
+  "\uBDF0\uD2F0/\uBBF8\uC6A9": "\uBDF0\uD2F0/\uBBF8\uC6A9",
+  "\uC790\uB3D9\uCC28": "\uC790\uB3D9\uCC28",
+  "\uC8FC\uAC70/\uD1B5\uC2E0": "\uC8FC\uAC70/\uD1B5\uC2E0",
+  "\uACBD\uC870/\uC120\uBB3C": "\uACBD\uC870/\uC120\uBB3C",
+  "\uC758\uB8CC\uAC74\uAC15": "\uC758\uB8CC\uAC74\uAC15",
 };
 
 const categoryAssetMap = {
@@ -275,6 +296,17 @@ const categoryAssetMap = {
   [TEXT.categoryShopping]: ASSETS.iconFashion,
   "\uC628\uB77C\uC778\uC1FC\uD551": ASSETS.iconShopping,
   "\uD328\uC158/\uC1FC\uD551": ASSETS.iconFashion,
+};
+
+const categoryMaskAssetMap = {
+  "\uAD50\uC721/\uD559\uC2B5": { asset: ASSETS.iconEducation, className: "category-mask-icon--education" },
+  "\uBB38\uD654/\uC5EC\uAC00": { asset: ASSETS.iconGame, className: "category-mask-icon--game" },
+  "\uBC18\uB824\uB3D9\uBB3C": { asset: ASSETS.iconPet, className: "category-mask-icon--pet" },
+  "\uBDF0\uD2F0/\uBBF8\uC6A9": { asset: ASSETS.iconBeauty, className: "category-mask-icon--beauty" },
+  "\uC790\uB3D9\uCC28": { asset: ASSETS.iconTransport, className: "category-mask-icon--transport" },
+  "\uC8FC\uAC70/\uD1B5\uC2E0": { asset: ASSETS.iconHousing, className: "category-mask-icon--housing" },
+  "\uACBD\uC870/\uC120\uBB3C": { asset: ASSETS.iconCommunication, className: "category-mask-icon--communication" },
+  "\uC758\uB8CC\uAC74\uAC15": { asset: ASSETS.iconMedical, className: "category-mask-icon--medical" },
 };
 
 const sampleTransactions = [
@@ -475,15 +507,33 @@ function isSampleSource(sourceName = appState.sourceName) {
 
 function normalizeTransactionType(type, rawAmount) {
   const normalized = String(type || "").replace(/\s+/g, "");
+  if (["이체", "입금", "충전", "내계좌이체"].some((keyword) => normalized.includes(keyword))) {
+    return type || "";
+  }
   if ([TEXT.expense, "출금", "사용", "결제", "체크카드", "카드사용", "승인"].some((keyword) => normalized.includes(keyword))) {
     return TEXT.expense;
   }
-  if (Number(rawAmount) < 0) return TEXT.expense;
+  if (!normalized && Number(rawAmount) < 0) return TEXT.expense;
   return type || "";
 }
 
 function getExpenseRows(transactions = appState.transactions) {
   return transactions.filter((item) => normalizeTransactionType(item.type, item.rawAmount) === TEXT.expense && item.amount > 0 && item.date);
+}
+
+function isExpenseOutflow(item) {
+  return Number(item.rawAmount) < 0;
+}
+
+function getExpenseImpact(item) {
+  return isExpenseOutflow(item) ? item.amount : -item.amount;
+}
+
+function getNetExpenseAmount(rows) {
+  return Math.max(
+    rows.reduce((sum, item) => sum + getExpenseImpact(item), 0),
+    0,
+  );
 }
 
 function getLatestMonthKey(transactions = appState.transactions) {
@@ -554,7 +604,15 @@ function normalizeSpendCategoryKey(value, item = null) {
   if (normalized.includes("온라인")) return "online";
   if (normalized.includes("카페") || normalized.includes("간식") || normalized.includes("커피")) return TEXT.categoryCafe;
   if (normalized.includes("식비") || normalized.includes("외식") || normalized.includes("음식")) return TEXT.categoryFood;
+  if (normalized.includes("자동차") || normalized.includes("차량") || normalized.includes("주유") || normalized.includes("택시")) return "자동차";
   if (normalized.includes("교통")) return TEXT.categoryTraffic;
+  if (normalized.includes("교육") || normalized.includes("학습") || normalized.includes("강의")) return "교육/학습";
+  if (normalized.includes("문화") || normalized.includes("여가") || normalized.includes("게임") || normalized.includes("오락") || normalized.includes("영화") || normalized.includes("공연") || normalized.includes("전시")) return "문화/여가";
+  if (normalized.includes("반려") || normalized.includes("동물") || normalized.includes("펫")) return "반려동물";
+  if (normalized.includes("뷰티") || normalized.includes("미용") || normalized.includes("화장품")) return "뷰티/미용";
+  if (normalized.includes("주거") || normalized.includes("월세") || normalized.includes("관리비") || normalized.includes("인테리어") || normalized.includes("통신")) return "주거/통신";
+  if (normalized.includes("경조") || normalized.includes("선물") || normalized.includes("축의") || normalized.includes("조의")) return "경조/선물";
+  if (normalized.includes("의료") || normalized.includes("병원") || normalized.includes("약국") || normalized.includes("건강")) return "의료건강";
   if (normalized.includes("생활")) return TEXT.categoryLife;
   if (normalized.includes("패션") || normalized.includes("쇼핑") || value === TEXT.categoryShopping) return "패션/쇼핑";
   return value || "기타";
@@ -562,8 +620,9 @@ function normalizeSpendCategoryKey(value, item = null) {
 
 function getCandidateMajor(item) {
   if (isOnlineShoppingTransaction(item)) return "온라인쇼핑";
-  if (item.major === TEXT.categoryShopping) return "패션/쇼핑";
-  return item.major || "기타";
+  const normalized = normalizeSpendCategoryKey(item.major, item);
+  if (normalized === "online") return "온라인쇼핑";
+  return normalized || "기타";
 }
 
 function refreshScreenScrollState() {
@@ -731,13 +790,36 @@ function getCategoryIconClass(category) {
   return "category-icon-image--dining";
 }
 
-function renderCategoryIcon(category, alt = "", size = "default") {
+function getMaskCategoryIcon(category) {
+  return categoryMaskAssetMap[normalizeSpendCategoryKey(category)] || null;
+}
+
+function renderCategoryIcon(category, alt = "", size = "default", color = "default") {
+  if (category === TEXT.categoryTraffic) {
+    return `
+      <span class="bus-icon bus-icon--${size}" role="img" aria-label="${alt}">
+        <img class="bus-icon-part bus-icon-bottom" src="${ASSETS.iconBusBottom}" alt="" loading="lazy" />
+        <img class="bus-icon-part bus-icon-top" src="${ASSETS.iconBusTop}" alt="" loading="lazy" />
+        <img class="bus-icon-part bus-icon-middle" src="${ASSETS.iconBusMiddle}" alt="" loading="lazy" />
+      </span>
+    `;
+  }
+
   if (category === "온라인쇼핑") {
     return `
       <span class="shopping-icon shopping-icon--${size}" role="img" aria-label="${alt}">
         <img class="shopping-icon-part shopping-icon-back" src="${ASSETS.iconShoppingBack}" alt="" loading="lazy" />
         <img class="shopping-icon-part shopping-icon-handle" src="${ASSETS.iconShoppingHandle}" alt="" loading="lazy" />
         <img class="shopping-icon-part shopping-icon-body" src="${ASSETS.iconShoppingBody}" alt="" loading="lazy" />
+      </span>
+    `;
+  }
+
+  const maskIcon = getMaskCategoryIcon(category);
+  if (maskIcon) {
+    return `
+      <span class="category-mask-icon category-mask-icon--${size} category-mask-icon--${color} ${maskIcon.className}" role="img" aria-label="${alt}">
+        <span class="category-mask-icon-shape" style="--category-icon-mask: url('${maskIcon.asset}')"></span>
       </span>
     `;
   }
@@ -787,6 +869,11 @@ function getCurrentCandidate() {
   );
 }
 
+function resetDetailTargetMode() {
+  appState.detailTargetMode = "ratio";
+  appState.manualTargetCount = null;
+}
+
 function getChallengeSourceCandidate(challenge) {
   if (!challenge) return null;
 
@@ -814,8 +901,11 @@ function computeCandidates(transactions) {
     }
 
     const bucket = grouped.get(key);
-    bucket.totalAmount += item.amount;
-    bucket.totalCount += 1;
+    const expenseImpact = getExpenseImpact(item);
+    bucket.totalAmount += expenseImpact;
+    if (isExpenseOutflow(item)) {
+      bucket.totalCount += 1;
+    }
     bucket.months.add(item.date.slice(0, 7));
 
     const subKey = item.minor || "\uAE30\uD0C0";
@@ -828,16 +918,20 @@ function computeCandidates(transactions) {
     }
 
     const subBucket = bucket.subcategories.get(subKey);
-    subBucket.totalAmount += item.amount;
-    subBucket.totalCount += 1;
+    subBucket.totalAmount += expenseImpact;
+    if (isExpenseOutflow(item)) {
+      subBucket.totalCount += 1;
+    }
   });
 
   return [...grouped.values()]
+    .filter((bucket) => bucket.totalAmount > 0 && bucket.totalCount > 0)
     .map((bucket) => {
       const monthCount = Math.max(bucket.months.size, 1);
       const monthlyAmount = bucket.totalAmount / monthCount;
       const monthlyCount = bucket.totalCount / monthCount;
       const topSubcategories = [...bucket.subcategories.values()]
+        .filter((subcategory) => subcategory.totalAmount > 0 && subcategory.totalCount > 0)
         .map((subcategory) => ({
           ...subcategory,
           annualAmount: subcategory.totalAmount,
@@ -914,10 +1008,23 @@ function getDetailSelection() {
   const baseMonthlyCount = source.monthlyCount ?? fallbackMonthlyCount;
   const annualAmount = source.annualAmount ?? candidate.annualAmount;
   const annualCount = source.annualCount ?? candidate.annualCount;
-  const targetAmount = ratioOverride?.targetAmount ?? Math.round(baseMonthlyAmount * appState.selectedRatio);
-  const savingMonthly = ratioOverride?.monthlySaving ?? Math.max(Math.round(baseMonthlyAmount - targetAmount), 0);
-  const targetCount = ratioOverride?.targetCount ?? Math.max(Math.round(baseMonthlyCount * appState.selectedRatio), 1);
-  const yearlySaving = ratioOverride?.yearlySaving ?? savingMonthly * 12;
+  const ratioTargetAmount = ratioOverride?.targetAmount ?? Math.round(baseMonthlyAmount * appState.selectedRatio);
+  const ratioSavingMonthly = ratioOverride?.monthlySaving ?? Math.max(Math.round(baseMonthlyAmount - ratioTargetAmount), 0);
+  const ratioTargetCount = ratioOverride?.targetCount ?? Math.max(Math.round(baseMonthlyCount * appState.selectedRatio), 1);
+  const usesManualCount = appState.detailTargetMode === "count";
+  const targetCount = usesManualCount
+    ? Math.max(Math.round(Number(appState.manualTargetCount) || ratioTargetCount), 1)
+    : ratioTargetCount;
+  const countAverageAmount = baseMonthlyCount ? baseMonthlyAmount / baseMonthlyCount : baseMonthlyAmount;
+  const targetAmount = usesManualCount
+    ? Math.max(Math.round(countAverageAmount * targetCount), 0)
+    : ratioTargetAmount;
+  const savingMonthly = usesManualCount
+    ? Math.max(Math.round(baseMonthlyAmount - targetAmount), 0)
+    : ratioSavingMonthly;
+  const yearlySaving = usesManualCount
+    ? savingMonthly * 12
+    : ratioOverride?.yearlySaving ?? savingMonthly * 12;
   const challengeTitle = source.title || candidate.defaultTitle || candidate.title;
   const displayName = subcategoryData?.title || candidate.placeholderName || challengeTitle;
   const nameIsPlaceholder = !subcategoryData?.title && Boolean(candidate.placeholderName);
@@ -962,6 +1069,9 @@ function buildChallengeFromCandidate(candidate) {
     totalSaving: selection.yearlySaving,
     startDate: "2025.06.15",
     selectedSubcategory: selection.subcategoryData?.name || TEXT.all,
+    selectedRatio: appState.selectedRatio,
+    targetMode: appState.detailTargetMode,
+    manualTargetCount: appState.detailTargetMode === "count" ? selection.targetCount : null,
     history: [
       Math.round(selection.savingMonthly * 2.55),
       Math.round(selection.savingMonthly * 2.4),
@@ -1210,17 +1320,18 @@ function getStaticSpendCategories() {
 
 function buildSpendModelFromTransactions() {
   const monthRows = getCurrentMonthRows();
-  const total = monthRows.reduce((sum, item) => sum + item.amount, 0);
+  const spendRows = monthRows.filter(isExpenseOutflow);
+  const total = getNetExpenseAmount(monthRows);
   const categoryCounts = new Map();
-  const onlineCount = monthRows.filter(isOnlineShoppingTransaction).length;
+  const onlineCount = spendRows.filter(isOnlineShoppingTransaction).length;
 
-  monthRows.forEach((item) => {
+  spendRows.forEach((item) => {
     const key = normalizeSpendCategoryKey(item.major, item);
     categoryCounts.set(key, (categoryCounts.get(key) || 0) + 1);
   });
 
   const categories = [
-    { key: "all", label: "전체", count: monthRows.length, icon: "grid" },
+    { key: "all", label: "전체", count: spendRows.length, icon: "grid" },
     ...[...categoryCounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([key, count]) => ({
@@ -1244,6 +1355,7 @@ function buildSpendModelFromTransactions() {
     total,
     categories,
     rows: monthRows,
+    displayRows: spendRows,
   };
 }
 
@@ -1298,14 +1410,15 @@ function getSpendModel() {
   }
 
   const normalizedRows = getRowsForSpendCategory(model.rows, appState.selectedSpendCategory);
-  const normalizedTotal = normalizedRows.reduce((sum, item) => sum + item.amount, 0);
+  const normalizedDisplayRows = getRowsForSpendCategory(model.displayRows, appState.selectedSpendCategory);
+  const normalizedTotal = getNetExpenseAmount(normalizedRows);
 
   return {
     selected: {
       total: normalizedTotal,
       shareLabel: "전체 중",
       share: model.total ? Math.round((normalizedTotal / model.total) * 100) : 0,
-      groups: groupSpendRows(normalizedRows),
+      groups: groupSpendRows(normalizedDisplayRows),
     },
     categories: model.categories,
   };
@@ -1318,10 +1431,53 @@ function renderSpendCategoryIcon(category) {
   return renderCategoryIcon(category.icon, category.label, "small");
 }
 
+function bindSpendCategoryDrag(container) {
+  if (!container || container.dataset.dragBound === "true") return;
+  container.dataset.dragBound = "true";
+
+  let isDragging = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  let hasMoved = false;
+
+  container.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) return;
+    isDragging = true;
+    hasMoved = false;
+    startX = event.pageX;
+    startScrollLeft = container.scrollLeft;
+    container.classList.add("is-dragging");
+  });
+
+  container.addEventListener("mousemove", (event) => {
+    if (!isDragging) return;
+    const deltaX = event.pageX - startX;
+    if (Math.abs(deltaX) > 4) {
+      hasMoved = true;
+      container.dataset.dragMoved = "true";
+    }
+    container.scrollLeft = startScrollLeft - deltaX;
+  });
+
+  ["mouseup", "mouseleave"].forEach((eventName) => {
+    container.addEventListener(eventName, () => {
+      if (!isDragging) return;
+      isDragging = false;
+      container.classList.remove("is-dragging");
+      if (hasMoved) {
+        window.setTimeout(() => {
+          container.dataset.dragMoved = "false";
+        }, 0);
+      }
+    });
+  });
+}
+
 function renderSpend() {
   const categoryContainer = document.getElementById("spend-category-row");
   const list = document.getElementById("spend-transaction-list");
   if (!categoryContainer || !list) return;
+  bindSpendCategoryDrag(categoryContainer);
 
   const { selected: selectedSpend, categories } = getSpendModel();
   document.getElementById("spend-total").textContent = formatWon(selectedSpend.total);
@@ -1336,7 +1492,11 @@ function renderSpend() {
       <span class="spend-category-icon">${renderSpendCategoryIcon(category)}<b>${category.count}</b></span>
       <span>${category.label}</span>
     `;
-    item.addEventListener("click", () => {
+    item.addEventListener("click", (event) => {
+      if (categoryContainer.dataset.dragMoved === "true") {
+        event.preventDefault();
+        return;
+      }
       appState.selectedSpendCategory = category.key;
       renderSpend();
     });
@@ -1413,6 +1573,7 @@ function renderCandidateList() {
       appState.selectedCandidateId = candidate.id;
       appState.selectedSubcategory = TEXT.all;
       appState.selectedRatio = 0.9;
+      resetDetailTargetMode();
       renderAll();
       setScreen("detail");
     });
@@ -1420,11 +1581,11 @@ function renderCandidateList() {
   });
 }
 
-function renderDetail() {
+function renderDetail(options = {}) {
   const selection = getDetailSelection();
   if (!selection) return;
   const { candidate, subcategoryData } = selection;
-  const shouldAnimateNumbers = document.querySelector('.screen.active')?.dataset.screen === "detail";
+  const shouldAnimateNumbers = options.animateNumbers !== false && document.querySelector('.screen.active')?.dataset.screen === "detail";
 
   document.getElementById("detail-category-title").textContent =
     categoryLabelMap[candidate.major] || candidate.major;
@@ -1461,11 +1622,13 @@ function renderDetail() {
     formatWon(selection.targetAmount),
     { animate: shouldAnimateNumbers, duration: 560, stagger: 24 },
   );
-  setRollingText(
-    document.getElementById("detail-target-count"),
-    formatCount(selection.targetCount),
-    { animate: shouldAnimateNumbers, duration: 480, stagger: 20 },
-  );
+  document.getElementById("target-amount-card")?.classList.toggle("active-card", appState.detailTargetMode === "ratio");
+  const targetCountCard = document.getElementById("target-count-card");
+  const targetCountInput = document.getElementById("detail-target-count-input");
+  targetCountCard?.classList.toggle("active-card", appState.detailTargetMode === "count");
+  if (targetCountInput && document.activeElement !== targetCountInput) {
+    targetCountInput.value = String(selection.targetCount);
+  }
   const detailSavingTextEl = document.getElementById("detail-saving-text");
   detailSavingTextEl.textContent = formatMonthlySavingText(selection.savingMonthly);
   detailSavingTextEl.setAttribute("aria-label", detailSavingTextEl.textContent);
@@ -1485,6 +1648,7 @@ function renderDetail() {
     chip.textContent = name;
     chip.addEventListener("click", () => {
       appState.selectedSubcategory = name;
+      resetDetailTargetMode();
       renderDetail();
     });
     subcategoryContainer.appendChild(chip);
@@ -1492,6 +1656,7 @@ function renderDetail() {
 
   const ratioContainer = document.getElementById("detail-ratio-chips");
   ratioContainer.innerHTML = "";
+  ratioContainer.classList.toggle("is-disabled", appState.detailTargetMode === "count");
   [
     { label: "90%", value: 0.9 },
     { label: "80%", value: 0.8 },
@@ -1499,9 +1664,11 @@ function renderDetail() {
     { label: "\uC9C1\uC811 \uC785\uB825", value: 0.65 },
   ].forEach((ratioOption) => {
     const chip = document.createElement("button");
-    chip.className = `ratio-chip${appState.selectedRatio === ratioOption.value ? " active" : ""}`;
+    chip.className = `ratio-chip${appState.detailTargetMode === "ratio" && appState.selectedRatio === ratioOption.value ? " active" : ""}`;
     chip.textContent = ratioOption.label;
     chip.addEventListener("click", () => {
+      appState.detailTargetMode = "ratio";
+      appState.manualTargetCount = null;
       appState.selectedRatio = ratioOption.value;
       renderDetail();
     });
@@ -1529,6 +1696,15 @@ function renderAll() {
   requestAnimationFrame(refreshScreenScrollState);
 }
 
+function activateManualTargetCount(value = null) {
+  const selection = getDetailSelection();
+  appState.detailTargetMode = "count";
+  appState.manualTargetCount = Math.max(
+    Math.round(Number(value ?? appState.manualTargetCount ?? selection?.targetCount ?? 1) || 1),
+    1,
+  );
+}
+
 function applyTransactions(transactions, sourceName = TEXT.sample) {
   appState.transactions = transactions;
   appState.sourceName = sourceName;
@@ -1542,11 +1718,12 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
 
   appState.currentMonthSpend = isSample
     ? 455250
-    : monthRows.reduce((sum, item) => sum + item.amount, 0);
+    : getNetExpenseAmount(monthRows);
   appState.candidateCategories = candidates;
   appState.selectedCandidateId = candidates[0]?.id || null;
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
+  resetDetailTargetMode();
   appState.selectedSpendCategory = "all";
   const cafeCandidate = candidates.find((item) => item.major === TEXT.categoryCafe);
   appState.challenges = [
@@ -1563,7 +1740,7 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
       baseMonthlyAmount: isSample ? 73860 : Math.round(cafeCandidate?.monthlyAmount || 73860),
       baseMonthlyCount: isSample ? 12 : Math.max(Math.round(cafeCandidate?.monthlyCount || 12), 1),
       monthlySavingTarget: 13870,
-      detailMonthlySaving: 6155,
+      detailMonthlySaving: 13870,
       totalSaving: 48650,
       startDate: "2025.06.15",
       history: [15780, 14900, 14200],
@@ -1694,6 +1871,7 @@ function resetPrototype() {
   appState.challengeFilter = "all";
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
+  resetDetailTargetMode();
   appState.previewUsesAverage = true;
   appState.selectedSpendCategory = "all";
   appState.selectedWishlistId = "snowman";
@@ -1801,6 +1979,9 @@ function bindActions() {
     if (sourceCandidate) {
       appState.selectedCandidateId = sourceCandidate.id;
       appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
+      appState.selectedRatio = challenge.selectedRatio || 0.9;
+      appState.detailTargetMode = challenge.targetMode || "ratio";
+      appState.manualTargetCount = challenge.targetMode === "count" ? challenge.manualTargetCount || challenge.targetCount : null;
       renderDetail();
       setScreen("detail");
       return;
@@ -1819,6 +2000,30 @@ function bindActions() {
   document.getElementById("preview-toggle")?.addEventListener("click", () => {
     appState.previewUsesAverage = !appState.previewUsesAverage;
     renderChallengeOverview();
+  });
+
+  const targetCountInput = document.getElementById("detail-target-count-input");
+  document.getElementById("target-count-card")?.addEventListener("click", () => {
+    targetCountInput?.focus();
+  });
+  targetCountInput?.addEventListener("focus", () => {
+    activateManualTargetCount(targetCountInput.value);
+    renderDetail({ animateNumbers: false });
+    requestAnimationFrame(() => {
+      targetCountInput.focus();
+      targetCountInput.select();
+    });
+  });
+  targetCountInput?.addEventListener("input", () => {
+    const sanitized = targetCountInput.value.replace(/\D/g, "").slice(0, 3);
+    targetCountInput.value = sanitized;
+    appState.detailTargetMode = "count";
+    appState.manualTargetCount = sanitized ? Math.max(Number(sanitized), 1) : null;
+    renderDetail({ animateNumbers: false });
+  });
+  targetCountInput?.addEventListener("blur", () => {
+    const selection = getDetailSelection();
+    targetCountInput.value = String(selection?.targetCount || 1);
   });
 
   document.getElementById("complete-button").addEventListener("click", completeChallenge);

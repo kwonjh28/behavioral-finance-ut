@@ -711,6 +711,99 @@ h6 {
   height: 17.69px;
 }
 
+.bus-icon {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.bus-icon--large,
+.bus-icon--default {
+  width: 36px;
+  height: 36px;
+}
+
+.bus-icon--small {
+  width: 32px;
+  height: 32px;
+}
+
+.bus-icon-part {
+  position: absolute;
+  display: block;
+  max-width: none;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.bus-icon-bottom {
+  inset: 54.17% 16.67% 8.33%;
+  width: 66.66%;
+  height: 37.5%;
+}
+
+.bus-icon-top {
+  inset: 8.33% 16.67% 66.67%;
+  width: 66.66%;
+  height: 25%;
+}
+
+.bus-icon-middle {
+  inset: 37.5% 16.67% 50%;
+  width: 66.66%;
+  height: 12.5%;
+}
+
+.challenge-card.is-completed .bus-icon {
+  filter: grayscale(1) brightness(1.08);
+  opacity: 0.42;
+}
+
+.category-mask-icon {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.category-mask-icon--large,
+.category-mask-icon--default {
+  width: 36px;
+  height: 36px;
+}
+
+.category-mask-icon--small {
+  width: 32px;
+  height: 32px;
+}
+
+.category-mask-icon-shape {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: linear-gradient(180deg, #ff9a7f 0%, #ff5d2e 100%);
+  -webkit-mask: var(--category-icon-mask) center / contain no-repeat;
+  mask: var(--category-icon-mask) center / contain no-repeat;
+}
+
+.category-mask-icon--gray .category-mask-icon-shape,
+.challenge-card.is-completed .category-mask-icon-shape {
+  background: #a8a8a8;
+}
+
+.category-mask-icon--beauty .category-mask-icon-shape {
+  inset: 0 30.2%;
+}
+
+.category-mask-icon--communication .category-mask-icon-shape {
+  inset: 11.57% 0;
+}
+
 .candidate-item .category-icon,
 .candidate-summary .category-icon {
   width: 32px;
@@ -1368,6 +1461,12 @@ h6 {
   color: var(--accent-deep);
 }
 
+.chip-row.is-disabled .ratio-chip {
+  background: #fff;
+  border-color: #d9d9d9;
+  color: #a8a8a8;
+}
+
 .detail-card-group {
   display: grid;
   gap: 12px;
@@ -1393,6 +1492,35 @@ h6 {
 .info-card strong {
   font-size: 24px;
   letter-spacing: -0.04em;
+}
+
+.target-count-card {
+  cursor: text;
+}
+
+.target-count-input-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  color: #2f2f2f;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.04em;
+}
+
+.target-count-input-wrap input {
+  width: 3.4ch;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.target-count-input-wrap input:focus {
+  caret-color: var(--accent);
 }
 
 .info-card--name {
@@ -1440,6 +1568,11 @@ h6 {
   justify-content: center;
   padding-bottom: 34px;
   background: transparent;
+}
+
+.screen[data-screen="wishlist-detail"] .sticky-cta {
+  padding: 6px 16px 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 24%);
 }
 
 .primary-button,
@@ -2274,9 +2407,9 @@ h6 {
 .wishlist-detail-scroll {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
   padding-top: 103px;
-  padding-bottom: 120px;
+  padding-bottom: 102px;
 }
 
 .wishlist-detail-hero {
@@ -2404,8 +2537,11 @@ h6 {
 }
 
 .wishlist-divider {
+  display: block;
+  flex: 0 0 8px;
+  width: calc(100% + 40px);
   height: 8px;
-  margin: 0 -20px;
+  margin: 8px -20px 0;
   background: #eaeaea;
 }
 
@@ -2560,6 +2696,9 @@ h6 {
 }
 
 .spend-divider {
+  display: block;
+  flex: 0 0 8px;
+  width: calc(100% + 40px);
   height: 8px;
   margin: 0 -20px;
   background: #eaeaea;
@@ -2656,10 +2795,17 @@ h6 {
   padding: 0 16px;
   overflow-x: auto;
   scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .spend-category-row::-webkit-scrollbar {
   display: none;
+}
+
+.spend-category-row.is-dragging {
+  cursor: grabbing;
 }
 
 .spend-category {
@@ -2684,8 +2830,8 @@ h6 {
   position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
 }
 
 .spend-category-icon .category-icon {
@@ -2695,19 +2841,22 @@ h6 {
 
 .spend-category-icon b {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  left: 17px;
+  top: 17px;
+  z-index: 1;
   display: grid;
   place-items: center;
+  width: 26px;
   min-width: 26px;
   height: 26px;
-  padding: 0 6px;
+  padding: 0;
   border-radius: 99px;
   background: #ff4605;
   color: #fafafa;
   font-size: 13px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.4;
+  letter-spacing: -0.13px;
   box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
 }
 

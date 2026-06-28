@@ -6,7 +6,7 @@
     <title>세이빙 챌린지 프로토타입</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260628-9" />
   </head>
   <body>
     <div class="desktop-shell">
@@ -215,7 +215,7 @@
               </section>
 
               <section class="detail-card-group">
-                <article class="info-card active-card">
+                <article class="info-card active-card" id="target-amount-card">
                   <p class="card-label">월 목표 지출액</p>
                   <strong id="detail-target-amount">0원</strong>
                   <div id="detail-ratio-chips" class="chip-row"></div>
@@ -224,9 +224,12 @@
                   </p>
                 </article>
 
-                <article class="info-card">
+                <article class="info-card target-count-card" id="target-count-card">
                   <p class="card-label">월 목표 지출 횟수</p>
-                  <strong id="detail-target-count">0회</strong>
+                  <label class="target-count-input-wrap" for="detail-target-count-input">
+                    <input id="detail-target-count-input" type="text" inputmode="numeric" pattern="[0-9]*" value="0" aria-label="월 목표 지출 횟수" />
+                    <span>회</span>
+                  </label>
                 </article>
 
                 <article class="info-card">
@@ -480,7 +483,7 @@
               <section class="wish-recommendations">
                 <article class="wish-tip-card" data-action="go-detail-from-wishlist">
                   <span class="sparkle">✦</span>
-                  <p>‘습관성 카페 줄이기’ 챌린지를 월 1회 더 실천하면 기간을 2개월 단축시킬 수 있어요!</p>
+                  <p>‘습관성 카페 줄이기’ 챌린지를 월 1회 더 실천하면<br />기간을 2개월 단축시킬 수 있어요!</p>
                   <button type="button">바로 챌린지 수정하기</button>
                 </article>
                 <article class="wish-tip-card" data-action="go-detail-from-wishlist">
@@ -575,6 +578,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=20260628-9"></script>
   </body>
 </html>
