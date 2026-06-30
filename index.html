@@ -6,7 +6,7 @@
     <title>세이빙 챌린지 프로토타입</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="./styles.css?v=20260629-8" />
+    <link rel="stylesheet" href="./styles.css?v=20260630-6" />
   </head>
   <body>
     <div class="desktop-shell">
@@ -18,34 +18,87 @@
             엑셀 파일을 올리면 실제 소비내역을 바탕으로 챌린지 후보와 목표값이 계산됩니다.
           </p>
 
+          <section class="participant-form" aria-label="대상자 프로필">
+            <h2>대상자 프로필</h2>
+
+            <fieldset class="survey-field">
+              <legend><span class="question-number">1.</span> 성별</legend>
+              <div class="survey-options survey-options--three">
+                <label><input type="radio" name="participant-gender" value="male" />남</label>
+                <label><input type="radio" name="participant-gender" value="female" />여</label>
+                <label><input type="radio" name="participant-gender" value="other" />기타</label>
+              </div>
+            </fieldset>
+
+            <label class="survey-field">
+              <span><span class="question-number">2.</span> 나이</span>
+              <input class="survey-input" type="number" inputmode="numeric" placeholder="직접 입력" />
+            </label>
+
+            <fieldset class="survey-field">
+              <legend><span class="question-number">3.</span> 직업</legend>
+              <div class="survey-options">
+                <label><input type="radio" name="participant-job" value="student" />학생</label>
+                <label><input type="radio" name="participant-job" value="seeking" />구직 중</label>
+                <label><input type="radio" name="participant-job" value="worker" />근로자</label>
+                <label><input type="radio" name="participant-job" value="other" />기타</label>
+              </div>
+              <input class="survey-input survey-input--sub" type="text" placeholder="기타 선택 시 직접 입력" />
+            </fieldset>
+
+            <fieldset class="survey-field">
+              <legend><span class="question-number">4.</span> 주 수입원</legend>
+              <div class="survey-options">
+                <label><input type="radio" name="participant-income" value="salary" />정기적인 급여</label>
+                <label><input type="radio" name="participant-income" value="allowance" />부모님 용돈</label>
+                <label><input type="radio" name="participant-income" value="irregular" />비정기적 수입</label>
+                <label><input type="radio" name="participant-income" value="other" />기타</label>
+              </div>
+              <input class="survey-input survey-input--sub" type="text" placeholder="기타 선택 시 직접 입력" />
+            </fieldset>
+
+            <fieldset class="survey-field">
+              <legend><span class="question-number">5.</span> 평소 스스로의 소비습관에 대해 어느정도 인지하고 계시나요?</legend>
+              <div class="scale-labels">
+                <span>별 생각이 없음</span>
+                <span>민감하게 인지하고 관리</span>
+              </div>
+              <div class="scale-options" aria-label="7점 척도">
+                <label><input type="radio" name="participant-awareness" value="1" />1</label>
+                <label><input type="radio" name="participant-awareness" value="2" />2</label>
+                <label><input type="radio" name="participant-awareness" value="3" />3</label>
+                <label><input type="radio" name="participant-awareness" value="4" />4</label>
+                <label><input type="radio" name="participant-awareness" value="5" />5</label>
+                <label><input type="radio" name="participant-awareness" value="6" />6</label>
+                <label><input type="radio" name="participant-awareness" value="7" />7</label>
+              </div>
+            </fieldset>
+          </section>
+
           <label class="upload-box" for="excel-file">
             <input id="excel-file" type="file" accept=".xlsx,.xls" />
-            <span class="upload-title">소비데이터 업로드</span>
+            <span class="upload-title"><span class="question-number">6.</span> 소비데이터 업로드</span>
             <span class="upload-desc">
               뱅크샐러드 엑셀의 "가계부 내역" 시트를 읽습니다.
             </span>
+            <span class="upload-note">
+              엑셀데이터는 테스트 종료 후 외부에 저장되지 않습니다.
+            </span>
           </label>
-
-          <button class="reset-prototype-button" data-action="reset-prototype" type="button">
-            첫 화면으로 초기화
-          </button>
-
-          <div class="guide-tip">
-            <strong>1차 테스트 포인트</strong>
-            <p>
-              업로드 → 추천 챌린지 생성 → 상세 계산 → 홈 반영 → 초기화까지의 흐름을 검증하는 버전입니다.
-            </p>
-          </div>
 
           <div class="guide-meta">
             <div>
               <span class="meta-label">현재 상태</span>
               <strong id="status-text"></strong>
             </div>
-            <div>
-              <span class="meta-label">아이콘 규칙</span>
-              <strong>미매핑 카테고리 → 식비 아이콘 대체</strong>
-            </div>
+          </div>
+
+          <button class="reset-prototype-button" data-action="reset-prototype" type="button">
+            첫 화면으로 초기화
+          </button>
+
+          <div id="upload-complete-toast" class="guide-toast hidden" role="status" aria-live="polite">
+            엑셀 데이터 적용이 완료됐습니다.
           </div>
         </div>
       </aside>
@@ -474,18 +527,7 @@
                 <div><span>예상 달성 연월</span><strong>2027년 6월</strong></div>
               </section>
 
-              <section class="wish-recommendations">
-                <article class="wish-tip-card" data-action="go-detail-from-wishlist">
-                  <span class="sparkle">✦</span>
-                  <p>‘습관성 카페 줄이기’ 챌린지를 월 1회 더 실천하면<br />기간을 2개월 단축시킬 수 있어요!</p>
-                  <button type="button">바로 챌린지 수정하기</button>
-                </article>
-                <article class="wish-tip-card" data-action="go-detail-from-wishlist">
-                  <span class="sparkle">✦</span>
-                  <p>‘배달비 아껴 주식 모으기’ 챌린지를 월 1회 더 실천하면 기간을 4개월 단축시킬 수 있어요!</p>
-                  <button type="button">바로 챌린지 수정하기</button>
-                </article>
-              </section>
+              <section id="wish-recommendations" class="wish-recommendations"></section>
             </div>
             <div class="sticky-cta">
               <button class="primary-button neutral-button" data-action="go-wishlist-add">편집</button>
@@ -568,10 +610,174 @@
             </div>
           </div>
         </div>
+        <section id="payment-demo" class="payment-demo" aria-hidden="true">
+          <div class="payment-demo-item">
+            <article class="payment-phone payment-lock-screen">
+              <div class="payment-status-bar" aria-hidden="true">
+                <span>9:41</span>
+                <span class="payment-dynamic-island"></span>
+                <div class="payment-status-icons">
+                  <span class="payment-cellular"></span>
+                  <span class="payment-wifi"></span>
+                  <span class="payment-battery"></span>
+                </div>
+              </div>
+              <div class="payment-lock-date">Monday, June 6</div>
+              <div class="payment-lock-time">9:41</div>
+              <div class="payment-lock-widgets" aria-hidden="true">
+                <div class="payment-weather-widget">
+                  <strong>72</strong>
+                  <span>68 86</span>
+                </div>
+                <div class="payment-rings-widget">
+                  <span></span>
+                </div>
+                <div class="payment-clock-widget">
+                  <span>CUP</span>
+                  <strong>9:41</strong>
+                  <span>AM</span>
+                </div>
+              </div>
+              <div class="payment-notification payment-push">
+                <div class="payment-notification-main">
+                  <img class="payment-cafe-icon" src="./assets/payment-cafe-icon.svg" alt="" />
+                  <div class="payment-notification-copy">
+                    <strong>습관성 카페 줄이기</strong>
+                    <div>
+                      <b class="payment-positive">5,500원</b>
+                      <span>/69,350원</span>
+                    </div>
+                  </div>
+                  <div class="payment-notification-count">
+                    <b class="payment-positive">1회</b>
+                    <span>/10회</span>
+                  </div>
+                </div>
+                <p>월 13,870원 절약 / 연 166,440원 절약</p>
+              </div>
+              <div class="payment-bottom-actions" aria-hidden="true">
+                <span class="payment-circle-action payment-flashlight"></span>
+                <span class="payment-focus">Do Not Disturb</span>
+                <span class="payment-circle-action payment-camera"></span>
+              </div>
+              <div class="payment-home-indicator" aria-hidden="true"></div>
+            </article>
+            <p class="payment-demo-title">1회 결제</p>
+          </div>
+
+          <div class="payment-demo-item">
+            <article class="payment-phone payment-lock-screen">
+              <div class="payment-status-bar" aria-hidden="true">
+                <span>9:41</span>
+                <span class="payment-dynamic-island"></span>
+                <div class="payment-status-icons">
+                  <span class="payment-cellular"></span>
+                  <span class="payment-wifi"></span>
+                  <span class="payment-battery"></span>
+                </div>
+              </div>
+              <div class="payment-lock-date">Monday, June 6</div>
+              <div class="payment-lock-time">9:41</div>
+              <div class="payment-lock-widgets" aria-hidden="true">
+                <div class="payment-weather-widget">
+                  <strong>72</strong>
+                  <span>68 86</span>
+                </div>
+                <div class="payment-rings-widget">
+                  <span></span>
+                </div>
+                <div class="payment-clock-widget">
+                  <span>CUP</span>
+                  <strong>9:41</strong>
+                  <span>AM</span>
+                </div>
+              </div>
+              <div class="payment-notification payment-push payment-push--delay">
+                <div class="payment-notification-main">
+                  <img class="payment-cafe-icon" src="./assets/payment-cafe-icon.svg" alt="" />
+                  <div class="payment-notification-copy">
+                    <strong>습관성 카페 줄이기</strong>
+                    <div>
+                      <b class="payment-positive">22,500원</b>
+                      <span>/69,350원</span>
+                    </div>
+                  </div>
+                  <div class="payment-notification-count">
+                    <b class="payment-positive">4회</b>
+                    <span>/10회</span>
+                  </div>
+                </div>
+                <p>월 13,870원 절약 / 연 166,440원 절약</p>
+              </div>
+              <div class="payment-bottom-actions" aria-hidden="true">
+                <span class="payment-circle-action payment-flashlight"></span>
+                <span class="payment-focus">Do Not Disturb</span>
+                <span class="payment-circle-action payment-camera"></span>
+              </div>
+              <div class="payment-home-indicator" aria-hidden="true"></div>
+            </article>
+            <p class="payment-demo-title">4회 결제</p>
+          </div>
+
+          <div class="payment-demo-item">
+            <article class="payment-phone payment-lock-screen">
+              <div class="payment-status-bar" aria-hidden="true">
+                <span>9:41</span>
+                <span class="payment-dynamic-island"></span>
+                <div class="payment-status-icons">
+                  <span class="payment-cellular"></span>
+                  <span class="payment-wifi"></span>
+                  <span class="payment-battery"></span>
+                </div>
+              </div>
+              <div class="payment-lock-date">Monday, June 6</div>
+              <div class="payment-lock-time">9:41</div>
+              <div class="payment-lock-widgets" aria-hidden="true">
+                <div class="payment-weather-widget">
+                  <strong>72</strong>
+                  <span>68 86</span>
+                </div>
+                <div class="payment-rings-widget">
+                  <span></span>
+                </div>
+                <div class="payment-clock-widget">
+                  <span>CUP</span>
+                  <strong>9:41</strong>
+                  <span>AM</span>
+                </div>
+              </div>
+              <div class="payment-notification payment-notification--over payment-push payment-push--late">
+                <div class="payment-notification-main">
+                  <img class="payment-cafe-icon" src="./assets/payment-cafe-icon.svg" alt="" />
+                  <div class="payment-notification-copy">
+                    <strong>습관성 카페 줄이기</strong>
+                    <div>
+                      <b class="payment-warning">82,000원</b>
+                      <span>/69,350원</span>
+                    </div>
+                  </div>
+                  <div class="payment-notification-count">
+                    <b class="payment-warning">12회</b>
+                    <span>/10회</span>
+                  </div>
+                </div>
+                <p>목표금액보다 12,650원 더 썼어요.</p>
+              </div>
+              <div class="payment-bottom-actions" aria-hidden="true">
+                <span class="payment-circle-action payment-flashlight"></span>
+                <span class="payment-focus">Do Not Disturb</span>
+                <span class="payment-circle-action payment-camera"></span>
+              </div>
+              <div class="payment-home-indicator" aria-hidden="true"></div>
+            </article>
+            <p class="payment-demo-title">챌린지 금액/횟수 초과</p>
+          </div>
+        </section>
       </main>
     </div>
+    <button id="payment-demo-toggle" class="payment-demo-toggle" data-action="toggle-payment-demo" type="button">결제시</button>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="./app.js?v=20260629-8"></script>
+    <script src="./app.js?v=20260630-8"></script>
   </body>
 </html>

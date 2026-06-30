@@ -5,7 +5,9 @@ const modalBackdrop = document.getElementById("modal-backdrop");
 const categorySheetBackdrop = document.getElementById("category-sheet-backdrop");
 const uploadInput = document.getElementById("excel-file");
 const statusText = document.getElementById("status-text");
+const uploadCompleteToast = document.getElementById("upload-complete-toast");
 let scrollStateRefreshQueued = false;
+let uploadToastTimer = null;
 
 const ASSETS = {
   iconCafe: "https://www.figma.com/api/mcp/asset/692cc764-419c-49c5-a393-9e9f0e5e7e21",
@@ -457,14 +459,54 @@ function getMonthlyChallengeSavingTotal() {
   return activeMonthlySaving || appState.monthlySavingGoal || INITIAL_SUMMARY.monthlySavingGoal;
 }
 
+function getWishlistMonthsToGoal(item, monthlySavingOverride = getMonthlyChallengeSavingTotal()) {
+  const price = Math.max(Number(item?.price || 0), 0);
+  const savedAmount = Math.max(Number(appState.savingsAccount || 0), 0);
+  const remainingAmount = Math.max(price - savedAmount, 0);
+  const monthlySaving = Math.max(Math.round(Number(monthlySavingOverride) || 0), 1);
+  return remainingAmount > 0 ? Math.ceil(remainingAmount / monthlySaving) : 0;
+}
+
+function getChallengeOneMoreMonthlySaving(challenge) {
+  if (!challenge || challenge.status === "completed") return 0;
+  const averageByBase =
+    Number(challenge.baseMonthlyCount || 0) > 0
+      ? Number(challenge.baseMonthlyAmount || 0) / Number(challenge.baseMonthlyCount || 0)
+      : 0;
+  const averageByTarget =
+    Number(challenge.targetCount || 0) > 0
+      ? Number(challenge.targetAmount || 0) / Number(challenge.targetCount || 0)
+      : 0;
+  return Math.max(Math.round(averageByBase || averageByTarget || 0), 0);
+}
+
+function getWishlistRecommendationModels(item) {
+  const currentMonthlySaving = getMonthlyChallengeSavingTotal();
+  const currentMonths = getWishlistMonthsToGoal(item, currentMonthlySaving);
+  if (currentMonths <= 0) return [];
+
+  return appState.challenges
+    .filter((challenge) => challenge.status !== "completed")
+    .map((challenge) => {
+      const additionalSaving = getChallengeOneMoreMonthlySaving(challenge);
+      const revisedMonths = getWishlistMonthsToGoal(item, currentMonthlySaving + additionalSaving);
+      return {
+        challenge,
+        additionalSaving,
+        reducedMonths: Math.max(currentMonths - revisedMonths, 0),
+      };
+    })
+    .filter((model) => model.additionalSaving > 0 && model.reducedMonths > 0)
+    .sort((a, b) => b.reducedMonths - a.reducedMonths)
+    .slice(0, 2);
+}
+
 function getWishlistProgressModel(item) {
   const price = Math.max(Number(item?.price || 0), 0);
   const savedAmount = Math.max(Number(appState.savingsAccount || 0), 0);
   const rawPercent = price ? (savedAmount / price) * 100 : 0;
   const percent = Math.max(0, Math.min(Math.round(rawPercent), 100));
-  const monthlySaving = Math.max(getMonthlyChallengeSavingTotal(), 1);
-  const remainingAmount = Math.max(price - savedAmount, 0);
-  const monthsToGoal = remainingAmount > 0 ? Math.ceil(remainingAmount / monthlySaving) : 0;
+  const monthsToGoal = getWishlistMonthsToGoal(item);
   const expectedDate = addMonths(new Date(), monthsToGoal);
 
   return {
@@ -1143,13 +1185,13 @@ function recalculateSavingsSummary() {
     (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
     0,
   );
-  // UT simulation: uploaded spend shapes recommendations, while saved/account totals
-  // move from the seeded scenario only after the participant adds challenges.
+  // UT simulation: added challenges can change monthly saving projections,
+  // but the savings account itself remains a seeded balance.
   const extraMonthlySaving = Math.max(monthlyGoals - INITIAL_SUMMARY.monthlySavingGoal, 0);
 
   appState.monthlySavingGoal = monthlyGoals;
   appState.currentMonthSaving = INITIAL_SUMMARY.currentMonthSaving + extraMonthlySaving;
-  appState.savingsAccount = INITIAL_SUMMARY.savingsAccount + Math.round(extraMonthlySaving * 0.72);
+  appState.savingsAccount = INITIAL_SUMMARY.savingsAccount;
   appState.totalSaved = INITIAL_SUMMARY.totalSaved + extraMonthlySaving * 12;
 }
 
@@ -1159,11 +1201,6 @@ function updateHomeSummary() {
     (sum, challenge) => sum + (challenge.monthlySavingTarget || 0),
     0,
   );
-  const focusChallenge = getCurrentChallenge();
-  const focusGoal =
-    focusChallenge?.monthlySavingTarget ||
-    Math.max((focusChallenge?.targetAmount || 0) - (focusChallenge?.currentAmount || 0), 0);
-
   document.getElementById("home-saving-amount").textContent = formatWon(monthlyGoals);
   document.getElementById("home-saving-period").textContent = appState.savingPeriodLabel;
   document.getElementById("home-saving-total").textContent = formatWon(appState.totalSaved);
@@ -1171,7 +1208,7 @@ function updateHomeSummary() {
   document.getElementById("home-savings-account").textContent = formatWon(appState.savingsAccount);
   document.getElementById("home-savings-account-clone").textContent = formatWon(appState.savingsAccount);
   document.getElementById("status-month-saving").textContent = formatWon(appState.currentMonthSaving);
-  document.getElementById("status-goal-amount").textContent = formatWon(focusGoal);
+  document.getElementById("status-goal-amount").textContent = formatWon(monthlyGoals);
   document.getElementById("status-challenge-count").textContent = `${appState.statusChallengeCountDisplay || appState.challenges.length}\uAC74`;
 }
 
@@ -1196,10 +1233,14 @@ function renderChallengeOverview() {
     Math.round(monthSaving * 2.4),
     Math.round(monthSaving * 2.28),
   ];
-  const recentAverage = Math.round(history.reduce((sum, value) => sum + value, 0) / history.length);
+  const recentAverage = history.length
+    ? Math.round(history.reduce((sum, value) => sum + value, 0) / history.length)
+    : monthSaving;
   const riseValue = Math.max((history[0] || 0) - (history[1] || 0), 0);
   const previewYears = [2, 3, 5];
-  const previewBase = appState.previewUsesAverage ? monthSaving : Math.max(challenge.targetAmount - challenge.currentAmount, 0);
+  const previewBase = appState.previewUsesAverage
+    ? recentAverage
+    : monthSaving;
 
   document.getElementById("overview-title").textContent = challenge.title;
   document.getElementById("overview-amount-current").textContent = formatWon(challenge.currentAmount);
@@ -1336,6 +1377,31 @@ function renderWishlist() {
   });
 }
 
+function renderWishlistRecommendations(item) {
+  const container = document.getElementById("wish-recommendations");
+  if (!container) return;
+  const recommendations = getWishlistRecommendationModels(item);
+  container.innerHTML = "";
+  container.classList.toggle("hidden", recommendations.length === 0);
+
+  recommendations.forEach(({ challenge, reducedMonths }) => {
+    const card = document.createElement("article");
+    card.className = "wish-tip-card";
+    card.innerHTML = `
+      <span class="sparkle">✦</span>
+      <p>‘${challenge.title}’ 챌린지를 월 1회 더 실천하면 기간을 ${reducedMonths}개월 단축시킬 수 있어요!</p>
+      <button type="button">바로 챌린지 수정하기</button>
+    `;
+    card.addEventListener("click", () => {
+      appState.selectedChallengeId = challenge.id;
+      appState.lastScreen = "wishlist-detail";
+      renderChallengeOverview();
+      setScreen("challenge-detail");
+    });
+    container.appendChild(card);
+  });
+}
+
 function renderWishlistDetail() {
   const item = getCurrentWishlistItem();
   if (!item) return;
@@ -1353,6 +1419,7 @@ function renderWishlistDetail() {
   const metaRows = document.querySelectorAll(".wish-meta div");
   if (metaRows[0]) metaRows[0].querySelector("strong").textContent = item.registeredAt;
   if (metaRows[1]) metaRows[1].querySelector("strong").textContent = progress.expectedAt;
+  renderWishlistRecommendations(item);
 }
 
 function renderWishlistAddForm() {
@@ -1719,11 +1786,12 @@ function renderDetail(options = {}) {
     formatCountMetric(selection.baseMonthlyCount),
     { animate: shouldAnimateNumbers },
   );
-  setRollingText(
-    document.getElementById("detail-average-amount"),
-    formatWon(selection.averageAmount),
-    { animate: shouldAnimateNumbers },
-  );
+  const detailAverageAmountEl = document.getElementById("detail-average-amount");
+  if (detailAverageAmountEl) {
+    detailAverageAmountEl.textContent = formatWon(selection.averageAmount);
+    delete detailAverageAmountEl.dataset.rollingValue;
+    detailAverageAmountEl.removeAttribute("aria-label");
+  }
   challengeNameEl.textContent = selection.displayName;
   challengeNameEl.classList.toggle("is-placeholder", selection.nameIsPlaceholder);
   setRollingText(
@@ -1875,7 +1943,17 @@ function applyTransactions(transactions, sourceName = TEXT.sample) {
   statusText.textContent = isSample
     ? `${sourceName} ${TEXT.statusApplied}`
     : `${sourceName} ${monthKey || ""} ${TEXT.statusApplied}`;
+  if (!isSample) showUploadCompleteToast();
   renderAll();
+}
+
+function showUploadCompleteToast() {
+  if (!uploadCompleteToast) return;
+  uploadCompleteToast.classList.remove("hidden");
+  if (uploadToastTimer) clearTimeout(uploadToastTimer);
+  uploadToastTimer = setTimeout(() => {
+    uploadCompleteToast.classList.add("hidden");
+  }, 2600);
 }
 
 function parseWorkbook(file) {
@@ -2008,10 +2086,23 @@ function resetPrototype() {
   setScreen("home");
 }
 
+function setPaymentDemoMode(isActive) {
+  document.body.classList.toggle("payment-demo-mode", isActive);
+  const demo = document.getElementById("payment-demo");
+  const toggle = document.getElementById("payment-demo-toggle");
+  if (demo) demo.setAttribute("aria-hidden", String(!isActive));
+  if (toggle) toggle.textContent = isActive ? "\uB3CC\uC544\uAC00\uAE30" : "\uACB0\uC81C\uC2DC";
+}
+
+function togglePaymentDemoMode() {
+  setPaymentDemoMode(!document.body.classList.contains("payment-demo-mode"));
+}
+
 function bindActions() {
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.action;
+      if (action === "toggle-payment-demo") togglePaymentDemoMode();
       if (action === "reset-prototype") resetPrototype();
       if (action === "go-home") setScreen("home");
       if (action === "go-add") setScreen("add");
