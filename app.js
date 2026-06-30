@@ -2174,10 +2174,8 @@ function bindActions() {
         setScreen("wishlist-detail");
       }
       if (action === "go-detail-from-wishlist") {
-        appState.selectedChallengeId = "habit-cafe";
-        appState.lastScreen = "wishlist-detail";
-        renderChallengeOverview();
-        setScreen("challenge-detail");
+        const wishlistChallenge = appState.challenges.find((challenge) => challenge.id === "habit-cafe") || getCurrentChallenge();
+        openChallengeEdit(wishlistChallenge, "wishlist-detail");
       }
       if (action === "open-category-sheet") {
         showCategorySheet();
