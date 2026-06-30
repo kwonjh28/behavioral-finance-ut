@@ -975,6 +975,56 @@ function getChallengeSourceCandidate(challenge) {
   );
 }
 
+function getOrCreateChallengeEditCandidate(challenge) {
+  const sourceCandidate = getChallengeSourceCandidate(challenge);
+  if (sourceCandidate) return sourceCandidate;
+  if (!challenge) return null;
+
+  const baseMonthlyAmount = Math.max(Math.round(challenge.baseMonthlyAmount || challenge.targetAmount || 0), 0);
+  const baseMonthlyCount = Math.max(Math.round(challenge.baseMonthlyCount || challenge.targetCount || 1), 1);
+  const averageAmount = baseMonthlyCount ? Math.round(baseMonthlyAmount / baseMonthlyCount) : baseMonthlyAmount;
+  const editCandidate = {
+    id: challenge.id,
+    major: challenge.category,
+    title: challenge.title,
+    defaultTitle: challenge.title,
+    annualAmount: baseMonthlyAmount * 12,
+    annualCount: baseMonthlyCount * 12,
+    monthlyAmount: baseMonthlyAmount,
+    monthlyCount: baseMonthlyCount,
+    averageAmount,
+    topSubcategories: [],
+    ratioOverrides: {
+      [String(challenge.selectedRatio || 0.9)]: {
+        targetAmount: challenge.targetAmount,
+        targetCount: challenge.targetCount,
+        monthlySaving: challenge.monthlySavingTarget || challenge.detailMonthlySaving || Math.max(baseMonthlyAmount - challenge.targetAmount, 0),
+        yearlySaving: challenge.totalSaving || (challenge.monthlySavingTarget || 0) * 12,
+      },
+    },
+  };
+  appState.candidateCategories.unshift(editCandidate);
+  return editCandidate;
+}
+
+function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appState.currentScreen) {
+  const sourceCandidate = getOrCreateChallengeEditCandidate(challenge);
+  if (!challenge || !sourceCandidate) {
+    setScreen(sourceScreen || "home");
+    return;
+  }
+
+  appState.selectedChallengeId = challenge.id;
+  appState.lastScreen = sourceScreen || appState.lastScreen || "home";
+  appState.selectedCandidateId = sourceCandidate.id;
+  appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
+  appState.selectedRatio = challenge.selectedRatio || 0.9;
+  appState.detailTargetMode = challenge.targetMode || "ratio";
+  appState.manualTargetCount = challenge.targetMode === "count" ? challenge.manualTargetCount || challenge.targetCount : null;
+  renderDetail();
+  setScreen("detail");
+}
+
 function computeCandidates(transactions) {
   const expenseRows = getExpenseRows(transactions);
   const grouped = new Map();
@@ -1393,10 +1443,7 @@ function renderWishlistRecommendations(item) {
       <button type="button">바로 챌린지 수정하기</button>
     `;
     card.addEventListener("click", () => {
-      appState.selectedChallengeId = challenge.id;
-      appState.lastScreen = "wishlist-detail";
-      renderChallengeOverview();
-      setScreen("challenge-detail");
+      openChallengeEdit(challenge, "wishlist-detail");
     });
     container.appendChild(card);
   });
@@ -2181,19 +2228,7 @@ function bindActions() {
 
   document.querySelector(".small-edit-button")?.addEventListener("click", () => {
     const challenge = getCurrentChallenge();
-    const sourceCandidate = getChallengeSourceCandidate(challenge);
-    if (sourceCandidate) {
-      appState.selectedCandidateId = sourceCandidate.id;
-      appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
-      appState.selectedRatio = challenge.selectedRatio || 0.9;
-      appState.detailTargetMode = challenge.targetMode || "ratio";
-      appState.manualTargetCount = challenge.targetMode === "count" ? challenge.manualTargetCount || challenge.targetCount : null;
-      renderDetail();
-      setScreen("detail");
-      return;
-    }
-
-    setScreen(appState.lastScreen || "home");
+    openChallengeEdit(challenge, appState.lastScreen || "home");
   });
 
   document.querySelectorAll("[data-filter]").forEach((button) => {
