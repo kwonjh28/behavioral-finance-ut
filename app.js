@@ -267,7 +267,7 @@ const wishlistPresets = {
 const wishlistCategoryPresets = {
   fashion: { title: "아크테릭스 맨티스", price: 89000, category: "패션/잡화", image: ASSETS.wishTumbler },
   food: { title: "오마카세 식사권", price: 120000, category: "미식/푸드", image: ASSETS.wishSnowman },
-  tech: { title: "무선 키보드", price: 139000, category: "테크/가전", image: ASSETS.wishTumbler },
+  tech: { title: "아이폰 17pro", price: 1790000, category: "테크/가전", image: ASSETS.wishTumbler },
   living: wishlistPresets.living,
   culture: { title: "전시 패키지", price: 65000, category: "여가/문화", image: ASSETS.wishSnowman },
   beauty: { title: "이솝 핸드워시", price: 56000, category: "뷰티/웰니스", image: ASSETS.wishAesop },
@@ -548,10 +548,10 @@ function getWishlistRecommendationModels(item) {
       return {
         challenge,
         additionalSaving,
-        reducedMonths: Math.max(currentMonths - revisedMonths, 0),
+        reducedMonths: Math.max(currentMonths - revisedMonths, 1),
       };
     })
-    .filter((model) => model.additionalSaving > 0 && model.reducedMonths > 0)
+    .filter((model) => model.additionalSaving > 0)
     .sort((a, b) => b.reducedMonths - a.reducedMonths)
     .slice(0, 2);
 }
