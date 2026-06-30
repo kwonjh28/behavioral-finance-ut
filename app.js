@@ -183,6 +183,7 @@ const appState = {
   selectedSubcategory: TEXT.all,
   selectedRatio: 0.9,
   detailTargetMode: "ratio",
+  detailMode: "add",
   manualTargetCount: null,
   previewUsesAverage: true,
   selectedSpendCategory: "all",
@@ -1072,6 +1073,7 @@ function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appS
   appState.selectedCandidateId = sourceCandidate.id;
   appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
   appState.selectedRatio = challenge.selectedRatio || 0.9;
+  appState.detailMode = "edit";
   appState.detailTargetMode = challenge.targetMode || "ratio";
   appState.manualTargetCount = challenge.targetMode === "count" ? challenge.manualTargetCount || challenge.targetCount : null;
   renderDetail();
@@ -1844,6 +1846,7 @@ function renderCandidateList() {
       appState.selectedCandidateId = candidate.id;
       appState.selectedSubcategory = TEXT.all;
       appState.selectedRatio = 0.9;
+      appState.detailMode = "add";
       resetDetailTargetMode();
       renderAll();
       setScreen("detail");
@@ -1857,6 +1860,12 @@ function renderDetail(options = {}) {
   if (!selection) return;
   const { candidate, subcategoryData } = selection;
   const shouldAnimateNumbers = options.animateNumbers !== false && document.querySelector('.screen.active')?.dataset.screen === "detail";
+  const isEditing = appState.detailMode === "edit";
+  const detailScreenTitle = document.getElementById("detail-screen-title");
+  const completeButton = document.getElementById("complete-button");
+
+  if (detailScreenTitle) detailScreenTitle.textContent = isEditing ? "챌린지 수정" : "챌린지 추가";
+  if (completeButton) completeButton.textContent = isEditing ? "수정하기" : "등록하기";
 
   document.getElementById("detail-category-title").textContent =
     subcategoryData?.name || categoryLabelMap[candidate.major] || candidate.major;
@@ -2133,6 +2142,7 @@ function completeChallenge() {
   const challenge = buildChallengeFromCandidate(getCurrentCandidate());
   if (!challenge) return;
   const existingIndex = appState.challenges.findIndex((item) => item.id === challenge.id);
+  const isEditing = appState.detailMode === "edit";
 
   if (existingIndex >= 0) {
     const previous = appState.challenges[existingIndex];
@@ -2154,7 +2164,10 @@ function completeChallenge() {
   appState.challengeFilter = "all";
   appState.selectedChallengeId = challenge.id;
   renderAll();
-  showModal(TEXT.modalAdded);
+  showModal(
+    TEXT.modalAdded,
+    isEditing ? "챌린지 수정이 완료되었습니다." : "챌린지 추가가 완료되었습니다!",
+  );
 }
 
 function resetPrototype() {
@@ -2168,6 +2181,7 @@ function resetPrototype() {
   appState.selectedSubcategory = TEXT.all;
   appState.selectedRatio = 0.9;
   resetDetailTargetMode();
+  appState.detailMode = "add";
   appState.previewUsesAverage = true;
   appState.selectedSpendCategory = "all";
   appState.selectedWishlistId = "snowman";
@@ -2296,7 +2310,10 @@ function bindActions() {
       }
       if (action === "reset-prototype") resetPrototype();
       if (action === "go-home") setScreen("home");
-      if (action === "go-add") setScreen("add");
+      if (action === "go-add") {
+        appState.detailMode = "add";
+        setScreen("add");
+      }
       if (action === "go-status") setScreen("status");
       if (action === "go-my-challenges") setScreen("my-challenges");
       if (action === "go-wishlist") setScreen("wishlist");
