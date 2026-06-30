@@ -1085,8 +1085,7 @@ function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appS
 function isDetailEditing(selection = null) {
   if (appState.detailMode !== "edit") return false;
   if (!appState.editingChallengeId) return false;
-  if (!selection) return true;
-  return selection.challengeId === appState.editingChallengeId || selection.candidate?.id === appState.editingChallengeId;
+  return true;
 }
 
 function computeCandidates(transactions) {
@@ -1241,7 +1240,8 @@ function getDetailSelection() {
   const challengeTitle = createSavingChallengeTitle(selectedLabel);
   const displayName = challengeTitle;
   const nameIsPlaceholder = false;
-  const challengeId = subcategoryData ? `${candidate.id}-${slugify(subcategoryData.name)}` : candidate.id;
+  const generatedChallengeId = subcategoryData ? `${candidate.id}-${slugify(subcategoryData.name)}` : candidate.id;
+  const challengeId = isDetailEditing() ? appState.editingChallengeId : generatedChallengeId;
 
   return {
     candidate,
