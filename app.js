@@ -2325,6 +2325,16 @@ function bindActions() {
       }
       if (action === "reset-prototype") resetPrototype();
       if (action === "go-home") setScreen("home");
+      if (action === "go-detail-back") {
+        if (isDetailEditing()) {
+          const previousScreen = appState.lastScreen && appState.lastScreen !== "detail" ? appState.lastScreen : "challenge-detail";
+          setScreen(previousScreen);
+        } else {
+          appState.detailMode = "add";
+          appState.editingChallengeId = null;
+          setScreen("add");
+        }
+      }
       if (action === "go-add") {
         appState.detailMode = "add";
         appState.editingChallengeId = null;
