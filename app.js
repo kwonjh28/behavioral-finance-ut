@@ -184,6 +184,7 @@ const appState = {
   selectedRatio: 0.9,
   detailTargetMode: "ratio",
   detailMode: "add",
+  editingChallengeId: null,
   manualTargetCount: null,
   previewUsesAverage: true,
   selectedSpendCategory: "all",
@@ -1069,6 +1070,7 @@ function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appS
   }
 
   appState.selectedChallengeId = challenge.id;
+  appState.editingChallengeId = challenge.id;
   appState.lastScreen = sourceScreen || appState.lastScreen || "home";
   appState.selectedCandidateId = sourceCandidate.id;
   appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
@@ -1078,6 +1080,13 @@ function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appS
   appState.manualTargetCount = challenge.targetMode === "count" ? challenge.manualTargetCount || challenge.targetCount : null;
   renderDetail();
   setScreen("detail");
+}
+
+function isDetailEditing(selection = null) {
+  if (appState.detailMode !== "edit") return false;
+  if (!appState.editingChallengeId) return false;
+  if (!selection) return true;
+  return selection.challengeId === appState.editingChallengeId || selection.candidate?.id === appState.editingChallengeId;
 }
 
 function computeCandidates(transactions) {
@@ -1500,6 +1509,10 @@ function renderWishlistRecommendations(item) {
     card.addEventListener("click", () => {
       openChallengeEdit(challenge, "wishlist-detail");
     });
+    card.querySelector("button")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openChallengeEdit(challenge, "wishlist-detail");
+    });
     container.appendChild(card);
   });
 }
@@ -1847,6 +1860,7 @@ function renderCandidateList() {
       appState.selectedSubcategory = TEXT.all;
       appState.selectedRatio = 0.9;
       appState.detailMode = "add";
+      appState.editingChallengeId = null;
       resetDetailTargetMode();
       renderAll();
       setScreen("detail");
@@ -1860,7 +1874,7 @@ function renderDetail(options = {}) {
   if (!selection) return;
   const { candidate, subcategoryData } = selection;
   const shouldAnimateNumbers = options.animateNumbers !== false && document.querySelector('.screen.active')?.dataset.screen === "detail";
-  const isEditing = appState.detailMode === "edit";
+  const isEditing = isDetailEditing(selection);
   const detailScreenTitle = document.getElementById("detail-screen-title");
   const completeButton = document.getElementById("complete-button");
 
@@ -2142,7 +2156,7 @@ function completeChallenge() {
   const challenge = buildChallengeFromCandidate(getCurrentCandidate());
   if (!challenge) return;
   const existingIndex = appState.challenges.findIndex((item) => item.id === challenge.id);
-  const isEditing = appState.detailMode === "edit";
+  const isEditing = isDetailEditing(getDetailSelection());
 
   if (existingIndex >= 0) {
     const previous = appState.challenges[existingIndex];
@@ -2182,6 +2196,7 @@ function resetPrototype() {
   appState.selectedRatio = 0.9;
   resetDetailTargetMode();
   appState.detailMode = "add";
+  appState.editingChallengeId = null;
   appState.previewUsesAverage = true;
   appState.selectedSpendCategory = "all";
   appState.selectedWishlistId = "snowman";
@@ -2312,6 +2327,7 @@ function bindActions() {
       if (action === "go-home") setScreen("home");
       if (action === "go-add") {
         appState.detailMode = "add";
+        appState.editingChallengeId = null;
         setScreen("add");
       }
       if (action === "go-status") setScreen("status");
