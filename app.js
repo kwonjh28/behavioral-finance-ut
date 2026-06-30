@@ -902,7 +902,7 @@ function bindScrollStateObservers() {
 }
 
 function setScreen(screenName) {
-  if (["home", "status", "my-challenges", "wishlist", "spend", "add", "detail"].includes(screenName)) {
+  if (["home", "status", "my-challenges", "wishlist", "spend", "add", "wishlist-detail"].includes(screenName)) {
     appState.lastScreen = screenName;
   }
   appState.currentScreen = screenName;
@@ -916,6 +916,10 @@ function setScreen(screenName) {
       setTimeout(refreshActiveScreenScrollState, 80);
     });
   });
+}
+
+function getActiveScreenName() {
+  return document.querySelector(".screen.active")?.dataset.screen || appState.currentScreen || appState.lastScreen || "home";
 }
 
 function getCurrentChallenge() {
@@ -1063,17 +1067,17 @@ function getOrCreateChallengeEditCandidate(challenge) {
   return editCandidate;
 }
 
-function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appState.currentScreen) {
+function openChallengeEdit(challenge, sourceScreen = null) {
+  const returnScreen = sourceScreen || getActiveScreenName();
   const sourceCandidate = getOrCreateChallengeEditCandidate(challenge);
   if (!challenge || !sourceCandidate) {
-    setScreen(sourceScreen || "home");
+    setScreen(returnScreen || "home");
     return;
   }
 
   appState.selectedChallengeId = challenge.id;
   appState.editingChallengeId = challenge.id;
-  appState.lastScreen = sourceScreen || appState.lastScreen || "home";
-  appState.detailReturnScreen = sourceScreen || appState.currentScreen || appState.lastScreen || "home";
+  appState.detailReturnScreen = returnScreen && returnScreen !== "detail" ? returnScreen : "home";
   appState.selectedCandidateId = sourceCandidate.id;
   appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
   appState.selectedRatio = challenge.selectedRatio || 0.9;
@@ -2331,7 +2335,9 @@ function bindActions() {
       if (action === "go-home") setScreen("home");
       if (action === "go-detail-back") {
         if (isDetailEditing()) {
-          const previousScreen = appState.detailReturnScreen || "challenge-detail";
+          const previousScreen = appState.detailReturnScreen && appState.detailReturnScreen !== "detail"
+            ? appState.detailReturnScreen
+            : "home";
           appState.detailMode = "add";
           appState.editingChallengeId = null;
           appState.detailReturnScreen = "add";
@@ -2407,7 +2413,10 @@ function bindActions() {
           "wishlist",
         );
       }
-      if (action === "go-back-overview") setScreen(appState.lastScreen || "home");
+      if (action === "go-back-overview") {
+        const previousScreen = appState.lastScreen && appState.lastScreen !== "detail" ? appState.lastScreen : "home";
+        setScreen(previousScreen);
+      }
       if (action === "close-modal") hideModal();
       if (action === "go-home-modal") {
         hideModal();
