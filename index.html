@@ -773,11 +773,36 @@
             <p class="payment-demo-title">챌린지 금액/횟수 초과</p>
           </div>
         </section>
+        <section id="survey-demo" class="survey-demo" aria-hidden="true">
+          <article id="survey-preview-card" class="survey-preview-card">
+            <p id="survey-preview-eyebrow" class="survey-preview-eyebrow">UI 01</p>
+            <h2 id="survey-preview-title">소비 카테고리 인지</h2>
+            <img id="survey-preview-image" class="survey-preview-image" src="./assets/survey/spend.png" alt="설문 대상 UI 캡쳐" />
+            <p id="survey-preview-empty" class="survey-preview-empty-copy">UI 캡쳐 없이 서비스 전체 경험을 평가합니다.</p>
+          </article>
+          <article class="survey-panel">
+            <p id="survey-progress" class="survey-progress">1 / 8</p>
+            <h2 id="survey-question" class="survey-question"></h2>
+            <div class="survey-scale-labels" aria-hidden="true">
+              <span>전혀 아니다</span>
+              <span>보통</span>
+              <span>매우 그렇다</span>
+            </div>
+            <div id="survey-scale" class="survey-scale" role="radiogroup" aria-label="7점 척도"></div>
+            <div class="survey-nav">
+              <button id="survey-prev" class="survey-nav-button" data-action="survey-prev" type="button">이전 페이지</button>
+              <button id="survey-next" class="survey-nav-button primary" data-action="survey-next" type="button">다음 페이지</button>
+            </div>
+          </article>
+        </section>
       </main>
     </div>
-    <button id="payment-demo-toggle" class="payment-demo-toggle" data-action="toggle-payment-demo" type="button">결제시</button>
+    <div class="floating-action-group">
+      <button id="survey-demo-toggle" class="survey-demo-toggle" data-action="toggle-survey-demo" type="button">설문조사</button>
+      <button id="payment-demo-toggle" class="payment-demo-toggle" data-action="toggle-payment-demo" type="button">결제시</button>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="./app.js?v=20260630-12"></script>
+    <script src="./app.js?v=20260630-16"></script>
   </body>
 </html>

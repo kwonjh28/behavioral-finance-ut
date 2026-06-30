@@ -113,6 +113,57 @@ function getInitialWishlistItems() {
   ];
 }
 
+const surveyQuestions = [
+  {
+    eyebrow: "UI 01",
+    title: "소비 카테고리 인지",
+    image: "./assets/survey/spend.png",
+    question: "카테고리별로 모아진 소비 내역은 내가 어느 카테고리에서 어느 정도의 금액을 사용하는지 파악하는데 도움이 된다.",
+  },
+  {
+    eyebrow: "UI 02",
+    title: "챌린지 후보 선택",
+    image: "./assets/survey/challenge-add.png",
+    question: "해당 화면은 절약하고자 하는 소비 카테고리를 선정하는데 도움이 된다.",
+  },
+  {
+    eyebrow: "UI 03",
+    title: "목표 설정",
+    image: "./assets/survey/challenge-add-detail.png",
+    question: "비율(%)이나 횟수를 기반으로 챌린지를 설정하는 방식은 절약 목표를 세우는 데 도움이 되었다.",
+  },
+  {
+    eyebrow: "UI 04",
+    title: "절약 금액 추정",
+    image: "./assets/survey/challenge-add-detail.png",
+    question: "매년 아낄 수 있는 금액을 추정하여 보여주는 것은 챌린지에 대한 동기부여에 도움이 된다.",
+  },
+  {
+    eyebrow: "UI 05",
+    title: "세이빙 미리보기",
+    image: "./assets/survey/challenge-detail.png",
+    question: "‘세이빙 미리보기’의 n년 뒤 절감 가능한 자산 규모로 시각화되는 화면은 소비습관 관리에 대한 동기부여에 도움이 된다.",
+  },
+  {
+    eyebrow: "UI 06",
+    title: "결제 후 알림",
+    image: "./assets/survey/lockscreen.png",
+    question: "결제 이후 마주하게 되는 푸시알림은, 이후의 순간적인 충동 결제 및 습관성 결제를 줄여야겠다는 심리적 브레이크를 작동시킨다.",
+  },
+  {
+    eyebrow: "UI 07",
+    title: "위시리스트 연결",
+    image: "./assets/survey/wishlist-detail.png",
+    question: "단순히 '돈을 아껴라'가 아니라 '원하는 것을 구매하기 위해 이 지출을 제어하라'고 제안하는 방식이 기존 가계부 앱보다 동기부여가 잘 된다.",
+  },
+  {
+    eyebrow: "마지막 문항",
+    title: "서비스 전체 평가",
+    noPreview: true,
+    question: "기존에 사용하던 금융 앱(토스, 뱅크샐러드 등)과 비교했을 때, 이 서비스는 내 소비 행동을 변화시키는 데 실질적으로 더 유용하다고 느낀다.",
+  },
+];
+
 const appState = {
   currentScreen: "home",
   lastScreen: "home",
@@ -139,6 +190,8 @@ const appState = {
   selectedWishlistPreset: null,
   wishlistJustRegistered: false,
   modalMode: "challenge",
+  surveyIndex: 0,
+  surveyAnswers: Array(surveyQuestions.length).fill(null),
   wishlistItems: getInitialWishlistItems(),
   challenges: [
     {
@@ -2134,6 +2187,13 @@ function resetPrototype() {
 }
 
 function setPaymentDemoMode(isActive) {
+  if (isActive) {
+    document.body.classList.remove("survey-demo-mode");
+    const surveyDemo = document.getElementById("survey-demo");
+    const surveyToggle = document.getElementById("survey-demo-toggle");
+    if (surveyDemo) surveyDemo.setAttribute("aria-hidden", "true");
+    if (surveyToggle) surveyToggle.textContent = "\uC124\uBB38\uC870\uC0AC";
+  }
   document.body.classList.toggle("payment-demo-mode", isActive);
   const demo = document.getElementById("payment-demo");
   const toggle = document.getElementById("payment-demo-toggle");
@@ -2145,11 +2205,95 @@ function togglePaymentDemoMode() {
   setPaymentDemoMode(!document.body.classList.contains("payment-demo-mode"));
 }
 
+function renderSurveyDemo() {
+  const demo = document.getElementById("survey-demo");
+  const previewCard = document.getElementById("survey-preview-card");
+  const eyebrow = document.getElementById("survey-preview-eyebrow");
+  const title = document.getElementById("survey-preview-title");
+  const image = document.getElementById("survey-preview-image");
+  const empty = document.getElementById("survey-preview-empty");
+  const progress = document.getElementById("survey-progress");
+  const question = document.getElementById("survey-question");
+  const scale = document.getElementById("survey-scale");
+  const prev = document.getElementById("survey-prev");
+  const next = document.getElementById("survey-next");
+  if (!demo || !previewCard || !eyebrow || !title || !image || !empty || !progress || !question || !scale || !prev || !next) return;
+
+  const index = Math.min(Math.max(appState.surveyIndex, 0), surveyQuestions.length - 1);
+  appState.surveyIndex = index;
+  const item = surveyQuestions[index];
+  const selectedAnswer = appState.surveyAnswers[index];
+
+  demo.classList.toggle("is-final", Boolean(item.noPreview));
+  previewCard.classList.toggle("is-empty", Boolean(item.noPreview));
+  eyebrow.textContent = item.eyebrow;
+  title.textContent = item.title;
+  if (item.noPreview) {
+    image.hidden = true;
+    image.removeAttribute("src");
+    empty.hidden = false;
+  } else {
+    image.hidden = false;
+    image.src = item.image;
+    image.alt = `${item.title} 화면 캡쳐`;
+    empty.hidden = true;
+  }
+  progress.textContent = `${index + 1} / ${surveyQuestions.length}`;
+  question.textContent = item.question;
+  scale.innerHTML = "";
+
+  for (let value = 1; value <= 7; value += 1) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `survey-score${selectedAnswer === value ? " active" : ""}`;
+    button.textContent = String(value);
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-checked", String(selectedAnswer === value));
+    button.addEventListener("click", () => {
+      appState.surveyAnswers[index] = value;
+      renderSurveyDemo();
+    });
+    scale.appendChild(button);
+  }
+
+  prev.disabled = index === 0;
+  next.textContent = index === surveyQuestions.length - 1 ? "\uC644\uB8CC" : "\uB2E4\uC74C \uD398\uC774\uC9C0";
+}
+
+function setSurveyDemoMode(isActive) {
+  if (isActive) {
+    setPaymentDemoMode(false);
+  }
+  document.body.classList.toggle("survey-demo-mode", isActive);
+  const demo = document.getElementById("survey-demo");
+  const toggle = document.getElementById("survey-demo-toggle");
+  if (demo) demo.setAttribute("aria-hidden", String(!isActive));
+  if (toggle) toggle.textContent = isActive ? "\uB418\uB3CC\uC544\uAC00\uAE30" : "\uC124\uBB38\uC870\uC0AC";
+  if (isActive) renderSurveyDemo();
+}
+
+function toggleSurveyDemoMode() {
+  setSurveyDemoMode(!document.body.classList.contains("survey-demo-mode"));
+}
+
 function bindActions() {
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const action = button.dataset.action;
       if (action === "toggle-payment-demo") togglePaymentDemoMode();
+      if (action === "toggle-survey-demo") toggleSurveyDemoMode();
+      if (action === "survey-prev") {
+        appState.surveyIndex = Math.max(appState.surveyIndex - 1, 0);
+        renderSurveyDemo();
+      }
+      if (action === "survey-next") {
+        if (appState.surveyIndex >= surveyQuestions.length - 1) {
+          setSurveyDemoMode(false);
+        } else {
+          appState.surveyIndex = Math.min(appState.surveyIndex + 1, surveyQuestions.length - 1);
+          renderSurveyDemo();
+        }
+      }
       if (action === "reset-prototype") resetPrototype();
       if (action === "go-home") setScreen("home");
       if (action === "go-add") setScreen("add");
