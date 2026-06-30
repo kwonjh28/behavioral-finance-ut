@@ -1247,7 +1247,7 @@ function renderChallengeOverview() {
   document.getElementById("overview-amount-target").textContent = `/${formatWon(challenge.targetAmount)}`;
   document.getElementById("overview-count-current").textContent = formatCount(challenge.currentCount);
   document.getElementById("overview-count-target").textContent = `/${formatCount(challenge.targetCount)}`;
-  document.getElementById("overview-month-saving").textContent = `${formatWon(monthSaving)} (${formatCount(challenge.targetCount)})`;
+  document.getElementById("overview-month-saving").textContent = formatWon(monthSaving);
   document.getElementById("overview-base-spend").textContent = `${formatWon(baseMonthlyAmount)} (${formatCount(baseMonthlyCount)})`;
   document.getElementById("overview-total-saving").textContent = formatWon(totalSaving);
   document.getElementById("overview-start-date").textContent = challenge.startDate || "2025.06.15";
