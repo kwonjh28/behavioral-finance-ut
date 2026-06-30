@@ -185,6 +185,7 @@ const appState = {
   detailTargetMode: "ratio",
   detailMode: "add",
   editingChallengeId: null,
+  detailReturnScreen: "add",
   manualTargetCount: null,
   previewUsesAverage: true,
   selectedSpendCategory: "all",
@@ -1072,6 +1073,7 @@ function openChallengeEdit(challenge, sourceScreen = appState.lastScreen || appS
   appState.selectedChallengeId = challenge.id;
   appState.editingChallengeId = challenge.id;
   appState.lastScreen = sourceScreen || appState.lastScreen || "home";
+  appState.detailReturnScreen = sourceScreen || appState.currentScreen || appState.lastScreen || "home";
   appState.selectedCandidateId = sourceCandidate.id;
   appState.selectedSubcategory = challenge.selectedSubcategory || TEXT.all;
   appState.selectedRatio = challenge.selectedRatio || 0.9;
@@ -1861,6 +1863,7 @@ function renderCandidateList() {
       appState.selectedRatio = 0.9;
       appState.detailMode = "add";
       appState.editingChallengeId = null;
+      appState.detailReturnScreen = "add";
       resetDetailTargetMode();
       renderAll();
       setScreen("detail");
@@ -2197,6 +2200,7 @@ function resetPrototype() {
   resetDetailTargetMode();
   appState.detailMode = "add";
   appState.editingChallengeId = null;
+  appState.detailReturnScreen = "add";
   appState.previewUsesAverage = true;
   appState.selectedSpendCategory = "all";
   appState.selectedWishlistId = "snowman";
@@ -2327,17 +2331,22 @@ function bindActions() {
       if (action === "go-home") setScreen("home");
       if (action === "go-detail-back") {
         if (isDetailEditing()) {
-          const previousScreen = appState.lastScreen && appState.lastScreen !== "detail" ? appState.lastScreen : "challenge-detail";
+          const previousScreen = appState.detailReturnScreen || "challenge-detail";
+          appState.detailMode = "add";
+          appState.editingChallengeId = null;
+          appState.detailReturnScreen = "add";
           setScreen(previousScreen);
         } else {
           appState.detailMode = "add";
           appState.editingChallengeId = null;
+          appState.detailReturnScreen = "add";
           setScreen("add");
         }
       }
       if (action === "go-add") {
         appState.detailMode = "add";
         appState.editingChallengeId = null;
+        appState.detailReturnScreen = "add";
         setScreen("add");
       }
       if (action === "go-status") setScreen("status");
