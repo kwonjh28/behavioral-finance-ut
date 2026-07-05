@@ -1380,19 +1380,19 @@ h6 {
 }
 
 .tab-home .tab-icon {
-  background-image: url("https://www.figma.com/api/mcp/asset/4faba7bc-3f25-463c-baf7-175dfe583316");
+  background-image: url("./assets/icons/tab-home.svg");
 }
 
 .tab-wishlist .tab-icon {
-  background-image: url("https://www.figma.com/api/mcp/asset/1096fb7c-229b-4d6e-aae3-94c821840223");
+  background-image: url("./assets/icons/tab-wishlist.svg");
 }
 
 .tab-challenge .tab-icon {
-  background-image: url("https://www.figma.com/api/mcp/asset/336ef77c-d7ba-4ce1-a5c4-0bcc1f4dc72b");
+  background-image: url("./assets/icons/tab-challenge.svg");
 }
 
 .tab-spend .tab-icon {
-  background-image: url("https://www.figma.com/api/mcp/asset/0c2ca36d-cf51-44e8-85fa-6bb7a70f1617");
+  background-image: url("./assets/icons/tab-spend.svg");
 }
 
 .nav-header {
