@@ -11,7 +11,7 @@ let uploadToastTimer = null;
 
 const ASSETS = {
   iconCafe: "./assets/icons/cafe.svg",
-  iconDining: "./assets/icons/dining.svg",
+  iconDining: "./assets/icons/dining.png",
   iconShopping: "./assets/icons/shopping.svg",
   iconShoppingBack: "./assets/icons/shopping-back.svg",
   iconShoppingHandle: "./assets/icons/shopping-handle.svg",
@@ -20,23 +20,21 @@ const ASSETS = {
   iconEducation: "./assets/icons/education.svg",
   iconPet: "./assets/icons/pet.svg",
   iconBeauty: "./assets/icons/beauty.svg",
-  iconBusBottom: "./assets/icons/bus-bottom.svg",
-  iconBusTop: "./assets/icons/bus-top.svg",
-  iconBusMiddle: "./assets/icons/bus-middle.svg",
+  iconBus: "./assets/icons/bus.svg",
   iconTransport: "./assets/icons/car.svg",
   iconCommunication: "./assets/icons/letter.svg",
   iconMedical: "./assets/icons/medic.svg",
   iconHousing: "./assets/icons/house.svg",
   iconGame: "./assets/icons/joystick.svg",
-  iconTravel: "./assets/icons/travel.svg",
-  iconFinance: "./assets/icons/finance.svg",
-  iconWine: "./assets/icons/wine.svg",
+  iconTravel: "./assets/icons/travel.png",
+  iconFinance: "./assets/icons/finance.png",
+  iconWine: "./assets/icons/wine.png",
   iconLife: "./assets/icons/life.svg",
-  wishOne: "./assets/wishlist/snowman.svg",
-  wishTwo: "./assets/wishlist/tumbler.svg",
-  wishSnowman: "./assets/wishlist/snowman.svg",
-  wishTumbler: "./assets/wishlist/tumbler.svg",
-  wishAesop: "./assets/wishlist/aesop.svg",
+  wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
+  wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
+  wishSnowman: "https://www.figma.com/api/mcp/asset/c0481063-63ed-430c-aabd-e2fde156b1f2",
+  wishTumbler: "https://www.figma.com/api/mcp/asset/54088dc8-da79-4783-8601-23fd89b385f5",
+  wishAesop: "https://www.figma.com/api/mcp/asset/c3f23808-7e11-4133-9449-0a01e263df0e",
 };
 
 const TEXT = {
@@ -349,9 +347,11 @@ const categoryLabelMap = {
   "\uC8FC\uAC70/\uD1B5\uC2E0": "\uC8FC\uAC70/\uD1B5\uC2E0",
   "\uACBD\uC870/\uC120\uBB3C": "\uACBD\uC870/\uC120\uBB3C",
   "\uC758\uB8CC\uAC74\uAC15": "\uC758\uB8CC\uAC74\uAC15",
+  "\uC758\uB8CC/\uAC74\uAC15": "\uC758\uB8CC/\uAC74\uAC15",
   "\uC5EC\uD589/\uC219\uBC15": "\uC5EC\uD589/\uC219\uBC15",
   "\uAE08\uC735": "\uAE08\uC735",
   "\uC220/\uC720\uD765": "\uC220/\uC720\uD765",
+  "\uAE30\uD0C0": "\uAE30\uD0C0",
 };
 
 const categoryAssetMap = {
@@ -361,6 +361,9 @@ const categoryAssetMap = {
   [TEXT.categoryShopping]: ASSETS.iconFashion,
   "\uC628\uB77C\uC778\uC1FC\uD551": ASSETS.iconShopping,
   "\uD328\uC158/\uC1FC\uD551": ASSETS.iconFashion,
+  "\uC5EC\uD589/\uC219\uBC15": ASSETS.iconTravel,
+  "\uAE08\uC735": ASSETS.iconFinance,
+  "\uC220/\uC720\uD765": ASSETS.iconWine,
 };
 
 const categoryMaskAssetMap = {
@@ -373,9 +376,7 @@ const categoryMaskAssetMap = {
   "\uC8FC\uAC70/\uD1B5\uC2E0": { asset: ASSETS.iconHousing, className: "category-mask-icon--housing" },
   "\uACBD\uC870/\uC120\uBB3C": { asset: ASSETS.iconCommunication, className: "category-mask-icon--communication" },
   "\uC758\uB8CC\uAC74\uAC15": { asset: ASSETS.iconMedical, className: "category-mask-icon--medical" },
-  "\uC5EC\uD589/\uC219\uBC15": { asset: ASSETS.iconTravel, className: "category-mask-icon--travel" },
-  "\uAE08\uC735": { asset: ASSETS.iconFinance, className: "category-mask-icon--finance" },
-  "\uC220/\uC720\uD765": { asset: ASSETS.iconWine, className: "category-mask-icon--wine" },
+  "\uC758\uB8CC/\uAC74\uAC15": { asset: ASSETS.iconMedical, className: "category-mask-icon--medical" },
 };
 
 const sampleTransactions = [
@@ -758,7 +759,7 @@ function normalizeSpendCategoryKey(value, item = null) {
   if (normalized.includes("뷰티") || normalized.includes("미용") || normalized.includes("화장품")) return "뷰티/미용";
   if (normalized.includes("주거") || normalized.includes("월세") || normalized.includes("관리비") || normalized.includes("인테리어") || normalized.includes("통신")) return "주거/통신";
   if (normalized.includes("경조") || normalized.includes("선물") || normalized.includes("축의") || normalized.includes("조의")) return "경조/선물";
-  if (normalized.includes("의료") || normalized.includes("병원") || normalized.includes("약국") || normalized.includes("건강")) return "의료건강";
+  if (normalized.includes("의료") || normalized.includes("병원") || normalized.includes("약국") || normalized.includes("건강")) return "의료/건강";
   if (normalized.includes("여행") || normalized.includes("숙박") || normalized.includes("항공") || normalized.includes("호텔")) return "여행/숙박";
   if (normalized.includes("금융") || normalized.includes("보험") || normalized.includes("대출") || normalized.includes("이자") || normalized.includes("수수료")) return "금융";
   if (normalized.includes("술") || normalized.includes("유흥") || normalized.includes("주점") || normalized.includes("와인") || normalized.includes("맥주")) return "술/유흥";
@@ -935,11 +936,15 @@ function getCategoryAsset(category, fallback = ASSETS.iconDining) {
 
 function getCategoryIconClass(category) {
   if (category === TEXT.categoryCafe) return "category-icon-image--cafe";
-  if (category === TEXT.categoryFood || category === TEXT.categoryTraffic) {
+  if (category === TEXT.categoryFood) {
     return "category-icon-image--dining";
   }
+  if (category === TEXT.categoryTraffic) return "category-icon-image--bus";
   if (category === "온라인쇼핑") return "category-icon-image--shopping";
   if (category === TEXT.categoryShopping || category === "패션/쇼핑") return "category-icon-image--fashion";
+  if (category === "여행/숙박") return "category-icon-image--travel";
+  if (category === "금융") return "category-icon-image--finance";
+  if (category === "술/유흥") return "category-icon-image--wine";
   return "category-icon-image--dining";
 }
 
@@ -949,13 +954,7 @@ function getMaskCategoryIcon(category) {
 
 function renderCategoryIcon(category, alt = "", size = "default", color = "default") {
   if (category === TEXT.categoryTraffic) {
-    return `
-      <span class="bus-icon bus-icon--${size}" role="img" aria-label="${alt}">
-        <img class="bus-icon-part bus-icon-bottom" src="${ASSETS.iconBusBottom}" alt="" loading="lazy" />
-        <img class="bus-icon-part bus-icon-top" src="${ASSETS.iconBusTop}" alt="" loading="lazy" />
-        <img class="bus-icon-part bus-icon-middle" src="${ASSETS.iconBusMiddle}" alt="" loading="lazy" />
-      </span>
-    `;
+    return `<img class="category-icon-image category-icon-image--${size} category-icon-image--bus" src="${ASSETS.iconBus}" alt="${alt}" loading="lazy" />`;
   }
 
   if (category === "온라인쇼핑") {
@@ -964,6 +963,14 @@ function renderCategoryIcon(category, alt = "", size = "default", color = "defau
         <img class="shopping-icon-part shopping-icon-back" src="${ASSETS.iconShoppingBack}" alt="" loading="lazy" />
         <img class="shopping-icon-part shopping-icon-handle" src="${ASSETS.iconShoppingHandle}" alt="" loading="lazy" />
         <img class="shopping-icon-part shopping-icon-body" src="${ASSETS.iconShoppingBody}" alt="" loading="lazy" />
+      </span>
+    `;
+  }
+
+  if (category === "기타") {
+    return `
+      <span class="category-else-icon category-else-icon--${size} category-else-icon--${color}" role="img" aria-label="${alt}">
+        <i></i><i></i><i></i>
       </span>
     `;
   }
@@ -1570,10 +1577,10 @@ function getStaticSpendCategories() {
     { key: TEXT.categoryCafe, label: "카페/간식", count: 8, icon: TEXT.categoryCafe },
     { key: TEXT.categoryFood, label: "외식", count: 7, icon: TEXT.categoryFood },
     { key: "패션/쇼핑", label: "패션/쇼핑", count: 5, icon: "패션/쇼핑" },
-    { key: "online", label: "온라인 쇼핑", count: 4, icon: "온라인쇼핑" },
+    { key: "online", label: "온라인쇼핑", count: 4, icon: "온라인쇼핑" },
     { key: TEXT.categoryTraffic, label: "교통", count: 2, icon: TEXT.categoryTraffic },
     { key: "술/유흥", label: "술/유흥", count: 2, icon: "술/유흥" },
-    { key: "기타", label: "기타", count: 2, icon: "grid" },
+    { key: "기타", label: "기타", count: 2, icon: "기타" },
   ];
 }
 
@@ -1595,7 +1602,7 @@ function buildSpendModelFromTransactions() {
       .sort((a, b) => b[1] - a[1])
       .map(([key, count]) => ({
         key,
-        label: key === "online" ? "온라인 쇼핑" : categoryLabelMap[key] || key,
+        label: key === "online" ? "온라인쇼핑" : categoryLabelMap[key] || key,
         count,
         icon: key === "online" ? "온라인쇼핑" : key,
       })),
@@ -1604,7 +1611,7 @@ function buildSpendModelFromTransactions() {
   if (onlineCount && !categories.some((category) => category.key === "online")) {
     categories.splice(Math.min(categories.length, 4), 0, {
       key: "online",
-      label: "온라인 쇼핑",
+      label: "온라인쇼핑",
       count: onlineCount,
       icon: "온라인쇼핑",
     });

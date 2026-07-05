@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="none" stroke="#ff876a" stroke-width="5" stroke-linecap="round" d="M24 25v-5a8 8 0 0 1 16 0v5"/></svg>
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 12.6658 6.33256" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="handle">
+<foreignObject x="0" y="0" width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(7.24px);height:100%;width:100%"></div></foreignObject><path id="Ellipse 217" data-figma-bg-blur-radius="14.4724" d="M11.2208 6.33186C11.2208 3.43444 9.03397 1.08562 6.33638 1.08562C3.63879 1.08562 1.45196 3.43444 1.45196 6.33186" stroke="var(--stroke-0, #FF835A)" stroke-width="0.542714"/>
+<foreignObject x="-1.44724" y="-1.44633" width="15.5578" height="9.22613"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(0.72px);height:100%;width:100%"></div></foreignObject><g id="Ellipse 219" filter="url(#filter0_i_0_15)" data-figma-bg-blur-radius="1.44724">
+<path d="M11.7588 6.33256C11.7588 3.33524 9.32898 0.905427 6.33166 0.905427C3.33433 0.905427 0.904523 3.33524 0.904523 6.33256" stroke="var(--stroke-0, #FF835A)" stroke-width="1.80905"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_i_0_15" x="-1.44724" y="-1.44633" width="15.5578" height="9.22613" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.361809"/>
+<feGaussianBlur stdDeviation="0.180905"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.3 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_15"/>
+</filter>
+</defs>
+</svg>

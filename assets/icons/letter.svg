@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="#000" d="M10 16h44v32H10V16Zm7 6 15 12 15-12H17Zm31 20V28L32 41 16 28v14h32Z"/></svg>
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 36 27.6664" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group" filter="url(#filter0_i_0_9)">
+<path id="Vector" d="M24.0029 14.5254L35.826 24.8326C35.9385 24.4635 36 24.072 36 23.6666V4.06589L24.0029 14.5254Z" fill="var(--fill-0, #FF835A)"/>
+<path id="Vector_2" d="M18 15.7388C18.5068 15.7378 19.0062 15.5636 19.414 15.2088L35.1275 1.51017C34.3946 0.590765 33.2672 7.62939e-08 31.9999 7.62939e-08H4.00008C2.73284 7.62939e-08 1.60545 0.590695 0.872508 1.51017L16.586 15.2088C16.9933 15.5636 17.4932 15.7378 18 15.7388Z" fill="var(--fill-0, #FF835A)"/>
+<path id="Vector_3" d="M0 4.06589V23.6666C0 24.072 0.0615234 24.4635 0.173883 24.8326L11.9971 14.5249L0 4.06589Z" fill="var(--fill-0, #FF835A)"/>
+<path id="Vector_4" d="M21.0568 17.0934C20.1826 17.8556 19.088 18.2397 18 18.2386C16.912 18.2397 15.8168 17.8552 14.9432 17.0934L13.8994 16.1836L1.6278 26.8817C2.29205 27.3724 3.11084 27.6664 4.00008 27.6664H31.9999C32.8892 27.6664 33.7079 27.3724 34.3721 26.8817L22.1005 16.1836L21.0568 17.0934Z" fill="var(--fill-0, #FF835A)"/>
+</g>
+<defs>
+<filter id="filter0_i_0_9" x="-1.53492" y="-1.53492" width="39.0698" height="30.7362" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.986737"/>
+<feGaussianBlur stdDeviation="1.37047"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_0_9"/>
+</filter>
+</defs>
+</svg>

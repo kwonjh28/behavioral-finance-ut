@@ -756,14 +756,14 @@ h6 {
 
 .category-icon-image--dining.category-icon-image--large {
   width: 32px;
-  height: 23px;
+  height: 32px;
   max-width: none;
   max-height: none;
 }
 
 .category-icon-image--dining.category-icon-image--small {
   width: 28px;
-  height: 20px;
+  height: 28px;
   max-width: none;
   max-height: none;
 }
@@ -782,6 +782,20 @@ h6 {
   max-height: none;
 }
 
+.category-icon-image--bus.category-icon-image--large {
+  width: 32px;
+  height: 32px;
+  max-width: none;
+  max-height: none;
+}
+
+.category-icon-image--bus.category-icon-image--small {
+  width: 28px;
+  height: 28px;
+  max-width: none;
+  max-height: none;
+}
+
 .category-icon-image--fashion.category-icon-image--large {
   width: 30px;
   height: 28px;
@@ -792,6 +806,24 @@ h6 {
 .category-icon-image--fashion.category-icon-image--small {
   width: 28px;
   height: 26px;
+  max-width: none;
+  max-height: none;
+}
+
+.category-icon-image--travel.category-icon-image--large,
+.category-icon-image--finance.category-icon-image--large,
+.category-icon-image--wine.category-icon-image--large {
+  width: 32px;
+  height: 32px;
+  max-width: none;
+  max-height: none;
+}
+
+.category-icon-image--travel.category-icon-image--small,
+.category-icon-image--finance.category-icon-image--small,
+.category-icon-image--wine.category-icon-image--small {
+  width: 28px;
+  height: 28px;
   max-width: none;
   max-height: none;
 }
@@ -976,6 +1008,34 @@ h6 {
 
 .category-mask-icon--wine .category-mask-icon-shape {
   inset: 0 21.88%;
+}
+
+.category-else-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3.2px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.category-else-icon--small {
+  width: 32px;
+  height: 32px;
+}
+
+.category-else-icon i {
+  width: 6.4px;
+  height: 6.4px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ff9a7f 0%, #ff5d2e 100%);
+  display: block;
+}
+
+.category-else-icon--gray i,
+.challenge-card.is-completed .category-else-icon i {
+  background: #a8a8a8;
 }
 
 .candidate-item .category-icon,
