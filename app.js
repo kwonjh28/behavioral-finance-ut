@@ -30,11 +30,11 @@ const ASSETS = {
   iconFinance: "./assets/icons/finance.png",
   iconWine: "./assets/icons/wine.png",
   iconLife: "./assets/icons/life.svg",
-  wishOne: "https://www.figma.com/api/mcp/asset/0dad9db8-abe1-4a52-b9b8-9cb38537846f",
-  wishTwo: "https://www.figma.com/api/mcp/asset/6245b70f-6023-4f3b-bdc7-1cc7a2b123db",
-  wishSnowman: "https://www.figma.com/api/mcp/asset/c0481063-63ed-430c-aabd-e2fde156b1f2",
-  wishTumbler: "https://www.figma.com/api/mcp/asset/54088dc8-da79-4783-8601-23fd89b385f5",
-  wishAesop: "https://www.figma.com/api/mcp/asset/c3f23808-7e11-4133-9449-0a01e263df0e",
+  wishOne: "./assets/wishlist/snowman.png",
+  wishTwo: "./assets/wishlist/tumbler.png",
+  wishSnowman: "./assets/wishlist/snowman.png",
+  wishTumbler: "./assets/wishlist/tumbler.png",
+  wishAesop: "./assets/wishlist/aesop.png",
 };
 
 const TEXT = {
